@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e0f13">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Energy System">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
+<link rel="manifest" href="site.webmanifest">
+<title>Energy System — Gestionnaire de campagne</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="chronicles.css" />
+<link rel="stylesheet" href="documents.css" />
+<link rel="stylesheet" href="campaigns.css" />
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script>
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (!href) return;
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      window.location.hash = href.slice(1);
+      navigateFromHash();
+    } else if (!a.target) {
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    }
+  });
+</script>
+
+<style>
+  #lang-select {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text2); font-family: var(--font-display); font-size: 12px;
+    font-weight: 600; letter-spacing: 0.06em;
+    padding: 5px 8px; border-radius: 4px; cursor: pointer;
+    outline: none; transition: all 0.15s;
+  }
+  #lang-select:hover { border-color: var(--border2); color: var(--text); }
+  #lang-select option { background: var(--bg3); }
+</style>
+</head>
+<body>
+<!-- Loading overlay -->
+<div id="loading-overlay" class="active">
+  <div class="spinner"></div>
+  <div class="loading-text" data-i18n="loading">Chargement…</div>
+</div>
+
+<!-- Auth screen -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">Energy <span>System</span></div>
+    <div class="auth-tagline" data-i18n="app_tagline">Gestionnaire de campagne pour le jeu de rôle Energy System</div>
+    <button class="discord-btn" id="btn-discord" onclick="doDiscordLogin()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+      </svg>
+      <span data-i18n="auth_login_discord">Se connecter avec Discord</span>
+    </button>
+    <div class="auth-error" id="discord-error"></div>
+  </div>
+</div>
+
+<div id="app">
+
+  <!-- Top bar -->
+  <div id="topbar">
+    <div class="logo">Energy <span>System</span></div>
+
+    <nav>
+      <button id="nav-list" class="active" onclick="showView('list')" data-i18n="nav_characters">Personnages</button>
+      <button id="nav-chronicles" onclick="showView('chronicles')" data-i18n="nav_chronicles">Chroniques</button>
+      <button id="nav-documents" onclick="showView('documents')" data-i18n="nav_documents">Documents</button>
+      <button id="nav-campaigns" onclick="showView('campaigns')" data-i18n="nav_campaigns">Campagnes</button>
+    </nav>
+
+    <div class="topbar-right">
+      <span class="save-indicator" id="save-indicator"></span>
+      <select id="lang-select" onchange="setLang(this.value)">
+        <option value="fr">FR</option>
+        <option value="en">EN</option>
+      </select>
+      <!-- Partage personnage -->
+      <button class="share-btn" id="share-btn" onclick="shareChar()" style="display:none">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/>
+          <line x1="5.5" y1="7" x2="10.5" y2="4.3"/><line x1="5.5" y1="9" x2="10.5" y2="11.7"/>
+        </svg>
+        <span data-i18n="topbar_share">Partager</span>
+      </button>
+      <!-- Partage chronique -->
+      <button class="share-btn" id="chr-share-btn" onclick="shareChrBtn()" style="display:none">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/>
+          <line x1="5.5" y1="7" x2="10.5" y2="4.3"/><line x1="5.5" y1="9" x2="10.5" y2="11.7"/>
+        </svg>
+        <span data-i18n="topbar_share">Partager</span>
+      </button>
+      <!-- Partage document -->
+      <button class="share-btn" id="doc-share-btn" onclick="shareDocBtn()" style="display:none">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/>
+          <line x1="5.5" y1="7" x2="10.5" y2="4.3"/><line x1="5.5" y1="9" x2="10.5" y2="11.7"/>
+        </svg>
+        <span data-i18n="topbar_share">Partager</span>
+      </button>
+      <!-- Partage campagne -->
+      <button class="share-btn" id="campaign-share-btn" onclick="shareCampaignBtn()" style="display:none">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/>
+          <line x1="5.5" y1="7" x2="10.5" y2="4.3"/><line x1="5.5" y1="9" x2="10.5" y2="11.7"/>
+        </svg>
+        <span data-i18n="topbar_share">Partager</span>
+      </button>
+      <!-- Partage direct chronique/entrée/doc -->
+      <button class="share-btn" id="chr-detail-share-btn" onclick="shareChrDetailBtn()" style="display:none">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/>
+          <line x1="5.5" y1="7" x2="10.5" y2="4.3"/><line x1="5.5" y1="9" x2="10.5" y2="11.7"/>
+        </svg>
+        <span data-i18n="topbar_share">Partager</span>
+      </button>
+      <button class="share-btn" id="entry-reader-share-btn" onclick="shareEntryReaderBtn()" style="display:none">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/>
+          <line x1="5.5" y1="7" x2="10.5" y2="4.3"/><line x1="5.5" y1="9" x2="10.5" y2="11.7"/>
+        </svg>
+        <span data-i18n="topbar_share">Partager</span>
+      </button>
+      <button class="share-btn" id="doc-reader-share-btn" onclick="shareDocReaderBtn()" style="display:none">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/>
+          <line x1="5.5" y1="7" x2="10.5" y2="4.3"/><line x1="5.5" y1="9" x2="10.5" y2="11.7"/>
+        </svg>
+        <span data-i18n="topbar_share">Partager</span>
+      </button>
+      <!-- Partage personnage en lecture seule -->
+      <button class="share-btn" id="shared-char-share-btn" onclick="shareSharedChar()" style="display:none">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/>
+          <line x1="5.5" y1="7" x2="10.5" y2="4.3"/><line x1="5.5" y1="9" x2="10.5" y2="11.7"/>
+        </svg>
+        <span data-i18n="topbar_share">Partager</span>
+      </button>
+      <div class="user-menu-wrap" id="user-menu-wrap">
+        <button class="user-btn" onclick="toggleUserMenu()">
+          <div class="avatar" id="user-avatar">?</div>
+          <span id="user-label">…</span>
+        </button>
+        <div class="user-dropdown" id="user-dropdown">
+          <div class="user-dropdown-header">
+            <div class="uname" id="dd-username">—</div>
+            <div class="uemail" id="dd-email">—</div>
+          </div>
+          <button class="user-dropdown-item danger" onclick="doLogout()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M6 3H3v10h3M10 5l3 3-3 3M13 8H6"/>
+            </svg>
+            <span data-i18n="user_logout">Se déconnecter</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+
+    <!-- LIST VIEW -->
+    <div id="view-list" class="active">
+      <div class="list-header">
+        <div>
+          <h1><span data-i18n="roster_title">Roster</span> <span id="list-count-badge"></span></h1>
+          <div class="count" data-i18n="roster_subtitle">Base de données de personnages</div>
+        </div>
+        <button class="btn-primary" onclick="newChar()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+          <span data-i18n="roster_new_char">Nouveau personnage</span>
+        </button>
+      </div>
+      <div class="roster-filters" id="roster-filters" style="display:none">
+        <span class="filter-label" data-i18n="roster_filter_label">Filtrer</span>
+        <div id="filter-tags-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        <button class="filter-clear" id="filter-clear-btn" onclick="clearTagFilters()" data-i18n="roster_filter_clear">Tout afficher</button>
+      </div>
+      <div class="follow-input-wrap">
+        <input type="text" id="follow-code-input"
+          data-i18n="roster_follow_placeholder" data-i18n-attr="placeholder"
+          placeholder="Code de partage (ex: A3F8C2D1)"
+          maxlength="8" oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter') followCharByCode(this.value)">
+        <button class="btn-follow" onclick="followCharByCode(document.getElementById('follow-code-input').value)" data-i18n="btn_follow">
+          + Suivre un personnage
+        </button>
+      </div>
+      <div id="char-grid" class="char-grid"></div>
+      <div id="empty-state" class="empty-state" style="display:none">
+        <div class="icon">⚡</div>
+        <h2 data-i18n="roster_empty_title">Aucun personnage</h2>
+        <p data-i18n="roster_empty_body">Créez votre premier personnage pour commencer votre base de données de super-héros.</p>
+        <button class="btn-primary" onclick="newChar()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+          <span data-i18n="roster_empty_btn">Créer un personnage</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- EDITOR VIEW -->
+    <div id="view-editor">
+      <div id="mobile-tabs">
+        <button id="mob-tab-form" class="active" onclick="switchMobTab('form')" data-i18n="editor_mobile_edit">✏️ Éditer</button>
+        <button id="mob-tab-preview" onclick="switchMobTab('preview')" data-i18n="editor_mobile_preview">👁 Aperçu</button>
+      </div>
+      <div id="editor-form">
+        <!-- Illustration -->
+        <div class="form-section">
+          <div class="form-section-title" data-i18n="editor_section_illus">Illustration</div>
+          <div class="illus-upload-zone" id="illus-zone" onclick="illusZoneClick()">
+            <div class="illus-upload-placeholder" id="illus-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+              <span data-i18n="editor_illus_placeholder">Cliquez pour ajouter une illustration</span>
+            </div>
+            <img id="illus-preview-img" style="display:none">
+            <div class="illus-overlay" id="illus-overlay">
+              <button class="illus-overlay-btn" onclick="event.stopPropagation();document.getElementById('illus-input').click()" data-i18n="editor_illus_change">Changer</button>
+              <button class="illus-overlay-btn danger" onclick="event.stopPropagation();removeIllustration()" data-i18n="editor_illus_remove">Supprimer</button>
+            </div>
+            <div class="illus-uploading" id="illus-uploading">
+              <div class="spinner"></div>
+              <span data-i18n="editor_illus_uploading">Upload en cours…</span>
+            </div>
+          </div>
+          <div class="illus-slider-wrap" id="illus-slider-wrap">
+            <label data-i18n="editor_illus_slider">Cadrage</label>
+            <input type="range" id="illus-pos-slider" min="0" max="100" value="0"
+              oninput="updateIllusPosition(this.value)">
+          </div>
+          <input type="file" id="illus-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="uploadIllustration(this)">
+        </div>
+
+        <!-- Identité -->
+        <div class="form-section">
+          <div class="form-section-title" data-i18n="editor_section_identity">Identité</div>
+          <div class="field">
+            <label data-i18n="editor_field_name">Nom du personnage</label>
+            <input type="text" id="f-name"
+              data-i18n="editor_field_name_ph" data-i18n-attr="placeholder"
+              placeholder="Ex: Kitsune" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label data-i18n="editor_field_subtitle">Identité réelle</label>
+            <input type="text" id="f-sub"
+              data-i18n="editor_field_subtitle_ph" data-i18n-attr="placeholder"
+              placeholder="Ex: Jane Doe, lycéenne de 16 ans" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label data-i18n="editor_field_rank">Rang de puissance initial</label>
+            <select id="f-rank" onchange="updateRankMax(); updatePreview()">
+              <option value="1" data-i18n="rank_1">Rang 1 — Civils (9 pts)</option>
+              <option value="2" data-i18n="rank_2">Rang 2 — Flics & Voyous (17 pts)</option>
+              <option value="3" data-i18n="rank_3">Rang 3 — Agents spéciaux (24 pts)</option>
+              <option value="4" data-i18n="rank_4">Rang 4 — Super héro mineur (32 pts)</option>
+              <option value="5" selected data-i18n="rank_5">Rang 5 — Super héro débutant (39 pts)</option>
+              <option value="6" data-i18n="rank_6">Rang 6 — Super héro compétent (47 pts)</option>
+              <option value="7" data-i18n="rank_7">Rang 7 — Super héro reconnu (54 pts)</option>
+              <option value="8" data-i18n="rank_8">Rang 8 — Super héro puissant (62 pts)</option>
+              <option value="9" data-i18n="rank_9">Rang 9 — Super héro majeur (69 pts)</option>
+              <option value="10" data-i18n="rank_10">Rang 10 — Plus puissants sur Terre (77 pts)</option>
+              <option value="11" data-i18n="rank_11">Rang 11+ — Cosmique (84+ pts)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label data-i18n="editor_field_maturity">Maturité initiale</label>
+            <select id="f-maturity" onchange="updatePreview()">
+              <option value="adolescent" data-i18n="maturity_adolescent">Adolescent (12 pts d'aptitudes)</option>
+              <option value="adulte" selected data-i18n="maturity_adulte">Adulte (16 pts d'aptitudes)</option>
+              <option value="veteran" data-i18n="maturity_veteran">Vétéran (20 pts d'aptitudes)</option>
+            </select>
+          </div>
+          <div class="field" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0">
+            <label style="margin-bottom:0" data-i18n="editor_field_public">Partage public</label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:0">
+              <input type="checkbox" id="f-public" onchange="updatePreview()" style="width:auto;accent-color:var(--accent)">
+              <span style="font-size:12px;color:var(--text3)" id="public-label">Privé</span>
+            </label>
+          </div>
+          <div class="share-code-box" id="share-code-box" style="display:none">
+            <span class="code" id="share-code-val">—</span>
+            <button onclick="copyShareCode()" title="Copier le code">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13">
+                <rect x="5" y="5" width="8" height="8" rx="1"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/>
+              </svg>
+              <span data-i18n="share_copy_btn">Copier</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Attributs -->
+        <div class="form-section">
+          <div class="form-section-title" data-i18n="editor_section_attrs">Attributs</div>
+          <div class="pts-bar">
+            <span class="pts-label" data-i18n="editor_pts_hero">Points de héros</span>
+            <span class="pts-value" id="pts-display">0 / 39</span>
+          </div>
+          <div class="attr-row">
+            <div class="attr-name"><span data-i18n="editor_attr_energy">Énergie</span> <span style="color:var(--text3);font-size:11px" data-i18n="editor_attr_energy_cost">(2 pts/+1)</span></div>
+            <div class="attr-ctrl">
+              <button onclick="changeAttr('e',-1)">−</button>
+              <div class="attr-val e" id="val-e">1</div>
+              <button onclick="changeAttr('e',1)">+</button>
+              <div class="attr-cost" id="cost-e">2 pts</div>
+            </div>
+          </div>
+          <div class="attr-row">
+            <div class="attr-name"><span data-i18n="editor_attr_recovery">Récupération</span> <span style="color:var(--text3);font-size:11px" data-i18n="editor_attr_recovery_cost">(3 pts/+1)</span></div>
+            <div class="attr-ctrl">
+              <button onclick="changeAttr('r',-1)">−</button>
+              <div class="attr-val r" id="val-r">1</div>
+              <button onclick="changeAttr('r',1)">+</button>
+              <div class="attr-cost" id="cost-r">3 pts</div>
+            </div>
+          </div>
+          <div class="attr-row">
+            <div class="attr-name"><span data-i18n="editor_attr_vigor">Vigueur</span> <span style="color:var(--text3);font-size:11px" data-i18n="editor_attr_vigor_cost">(1 pt/+1)</span></div>
+            <div class="attr-ctrl">
+              <button onclick="changeAttr('v',-1)">−</button>
+              <div class="attr-val v" id="val-v">1</div>
+              <button onclick="changeAttr('v',1)">+</button>
+              <div class="attr-cost" id="cost-v">1 pt</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pouvoirs -->
+        <div class="form-section">
+          <div class="form-section-title" data-i18n="editor_section_powers">Pouvoirs</div>
+          <div id="powers-list"></div>
+          <button class="add-btn" onclick="addPower()" data-i18n="editor_add_power">+ Ajouter un pouvoir</button>
+        </div>
+
+        <!-- Aptitudes -->
+        <div class="form-section">
+          <div class="form-section-title" data-i18n="editor_section_aptitudes">Aptitudes</div>
+          <div class="apt-pts-bar">
+            <span class="lbl" data-i18n="editor_pts_aptitudes">Points d'aptitudes</span>
+            <span class="val" id="apt-pts-display">0 / 16</span>
+          </div>
+          <div class="aptitude-grid" id="aptitude-grid"></div>
+        </div>
+
+        <!-- Traits -->
+        <div class="form-section">
+          <div class="form-section-title" data-i18n="editor_section_traits">Traits</div>
+          <div id="traits-list"></div>
+          <button class="add-btn" onclick="addTrait()" data-i18n="editor_add_trait">+ Ajouter un trait</button>
+        </div>
+
+        <!-- Complications -->
+        <div class="form-section">
+          <div class="form-section-title"><span data-i18n="editor_section_complications">Complications</span> <span style="color:var(--text3);font-weight:400;font-size:10px" data-i18n="editor_complications_max">(max 5)</span></div>
+          <div id="complications-list"></div>
+          <button class="add-btn" id="add-compl-btn" onclick="addComplication()" data-i18n="editor_add_complication">+ Ajouter une complication</button>
+        </div>
+
+        <!-- Background -->
+        <div class="form-section">
+          <div class="form-section-title" data-i18n="editor_section_background">Background</div>
+          <div class="background-field">
+            <textarea id="f-background"
+              data-i18n="editor_background_ph" data-i18n-attr="placeholder"
+              placeholder="Histoire du personnage, origines, motivations…"
+              oninput="state.background=this.value;updatePreview()"></textarea>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="form-section">
+          <div class="form-section-title" data-i18n="editor_section_tags">Tags</div>
+          <div style="position:relative">
+            <div class="tags-input-wrap" id="tags-input-wrap" onclick="document.getElementById('tag-text-input').focus()">
+              <div id="tags-chips-container" style="display:contents"></div>
+              <input type="text" id="tag-text-input"
+                data-i18n="editor_tag_ph" data-i18n-attr="placeholder"
+                placeholder="Ajouter un tag…"
+                oninput="onTagInput(this.value)"
+                onkeydown="onTagKeydown(event)"
+                onfocus="showTagAutocomplete(this.value)"
+                autocomplete="off">
+            </div>
+            <div class="tags-autocomplete" id="tags-autocomplete" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Expérience -->
+        <div class="form-section">
+          <div class="form-section-title" data-i18n="editor_section_xp">Expérience</div>
+          <div class="xp-row">
+            <div class="xp-field">
+              <div class="xp-label" data-i18n="editor_xp_hero_label">Pts de héros bonus</div>
+              <div class="xp-ctrl">
+                <button onclick="changeXP('hero', -1)">−</button>
+                <div class="xp-val" id="xp-hero-val">0</div>
+                <button onclick="changeXP('hero', 1)">+</button>
+              </div>
+              <div class="xp-detail" data-i18n="editor_xp_hero_detail">S'ajoutent au budget du rang</div>
+            </div>
+            <div class="xp-field">
+              <div class="xp-label" data-i18n="editor_xp_apt_label">Pts d'aptitudes bonus</div>
+              <div class="xp-ctrl">
+                <button onclick="changeXP('apt', -1)">−</button>
+                <div class="xp-val" id="xp-apt-val">0</div>
+                <button onclick="changeXP('apt', 1)">+</button>
+              </div>
+              <div class="xp-detail" data-i18n="editor_xp_apt_detail">S'ajoutent au budget de maturité</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="showView('list')" data-i18n="btn_cancel">Annuler</button>
+          <button class="btn-cancel" id="mob-preview-btn" onclick="switchMobTab('preview')" style="display:none" data-i18n="btn_preview">Aperçu</button>
+          <button class="btn-save" onclick="saveChar()" data-i18n="btn_save">Sauvegarder</button>
+        </div>
+      </div>
+
+      <!-- Preview panel -->
+      <div id="preview-panel">
+        <div class="preview-card" id="preview-content"></div>
+      </div>
+    </div>
+
+    <!-- VUE PARTAGÉE (lecture seule) -->
+    <div id="view-shared">
+      <div class="shared-card" id="shared-content"></div>
+    </div>
+
+    <!-- VUE CHRONIQUES — liste -->
+    <div id="view-chronicles">
+      <div class="list-header">
+        <div>
+          <h1><span data-i18n="chr_title">Chroniques</span> <span id="chr-count-badge"></span></h1>
+          <div class="count" data-i18n="chr_subtitle">Récits de campagne</div>
+        </div>
+        <button class="btn-primary" onclick="newChronicle()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+          <span data-i18n="chr_new_btn">Nouvelle chronique</span>
+        </button>
+      </div>
+      <div class="chr-follow-wrap">
+        <input type="text" id="chr-follow-input"
+          data-i18n="chr_follow_placeholder" data-i18n-attr="placeholder"
+          placeholder="Code de partage (ex: A3F8C2D1)"
+          maxlength="8" oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter') followChrByCode(this.value)">
+        <button class="btn-follow-chr" onclick="followChrByCode(document.getElementById('chr-follow-input').value)" data-i18n="btn_follow_chr">
+          + S'abonner
+        </button>
+      </div>
+      <div id="chr-grid" class="chr-grid"></div>
+      <div id="chr-empty-state" class="empty-state" style="display:none">
+        <div class="icon">📖</div>
+        <h2 data-i18n="chr_empty_title">Aucune chronique</h2>
+        <p data-i18n="chr_empty_body">Rédigez le récit de vos aventures ou abonnez-vous aux chroniques d'autres joueurs.</p>
+        <button class="btn-primary" onclick="newChronicle()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+          <span data-i18n="chr_empty_btn">Créer une chronique</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VUE DÉTAIL CHRONIQUE -->
+    <div id="view-chr-detail">
+      <div id="chr-detail-content"></div>
+    </div>
+
+    <!-- VUE ÉDITEUR CHRONIQUE -->
+    <div id="view-chr-editor">
+      <div id="chr-editor-form">
+        <div class="chr-editor-fields">
+          <div class="form-section" style="border-bottom:none;padding:20px 20px 0">
+            <div class="form-section-title" data-i18n="editor_section_illus">Illustration</div>
+            <div class="illus-upload-zone" id="chr-illus-zone" onclick="chrIllusZoneClick()">
+              <div class="illus-upload-placeholder" id="chr-illus-placeholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <span data-i18n="editor_illus_placeholder">Cliquez pour ajouter une illustration</span>
+              </div>
+              <img id="chr-illus-preview-img" style="display:none">
+              <div class="illus-overlay" id="chr-illus-overlay">
+                <button class="illus-overlay-btn" onclick="event.stopPropagation();document.getElementById('chr-illus-input').click()" data-i18n="editor_illus_change">Changer</button>
+                <button class="illus-overlay-btn danger" onclick="event.stopPropagation();removeChrIllustration()" data-i18n="editor_illus_remove">Supprimer</button>
+              </div>
+              <div class="illus-uploading" id="chr-illus-uploading">
+                <div class="spinner"></div>
+                <span data-i18n="editor_illus_uploading">Upload en cours…</span>
+              </div>
+            </div>
+            <div class="illus-slider-wrap" id="chr-illus-slider-wrap">
+              <label data-i18n="editor_illus_slider">Cadrage</label>
+              <input type="range" id="chr-illus-pos-slider" min="0" max="100" value="0"
+                oninput="updateChrIllusPosition(this.value)">
+            </div>
+          </div>
+          <input type="file" id="chr-illus-input" accept="image/jpeg,image/png,image/webp,image/gif"
+            style="display:none" onchange="uploadChrIllustration(this)">
+          <div class="field">
+            <label data-i18n="chr_editor_field_title">Titre de la chronique</label>
+            <input type="text" id="chr-f-title"
+              data-i18n="chr_editor_field_title_ph" data-i18n-attr="placeholder"
+              placeholder="Ex: Campagne — Ombre de New York"
+              oninput="updateChrForm()">
+          </div>
+          <div class="field">
+            <label data-i18n="chr_editor_field_desc">Description</label>
+            <textarea id="chr-f-description"
+              data-i18n="chr_editor_field_desc_ph" data-i18n-attr="placeholder"
+              placeholder="Quelques mots pour présenter cette chronique…"
+              oninput="updateChrForm()" style="min-height:80px"></textarea>
+          </div>
+        </div>
+        <div class="chr-options">
+          <div class="chr-public-row">
+            <label data-i18n="chr_editor_public">Partage public</label>
+            <label class="chr-public-toggle">
+              <input type="checkbox" id="chr-f-public" onchange="updateChrForm()"
+                style="width:auto;accent-color:var(--sup)">
+              <span id="chr-public-label">Privée</span>
+            </label>
+          </div>
+          <div class="chr-share-code-box" id="chr-share-code-box" style="display:none">
+            <span class="code" id="chr-share-code-val">—</span>
+            <button onclick="copyChrShareCode()">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13">
+                <rect x="5" y="5" width="8" height="8" rx="1"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/>
+              </svg>
+              <span data-i18n="share_copy_btn">Copier</span>
+            </button>
+          </div>
+        </div>
+        <div class="chr-form-actions">
+          <button class="btn-cancel" onclick="showView('chronicles')" data-i18n="btn_cancel">Annuler</button>
+          <button class="btn-save" style="background:var(--sup)" onclick="saveChronicleToDB()" data-i18n="btn_save">Sauvegarder</button>
+        </div>
+      </div>
+      <div id="chr-preview-panel">
+        <div class="chr-preview-hint" data-i18n="chr_preview_hint">Les entrées s'ajoutent depuis la vue de la chronique.</div>
+      </div>
+    </div>
+
+    <!-- VUE ÉDITEUR ENTRÉE -->
+    <div id="view-entry-editor">
+      <div id="entry-mobile-tabs">
+        <button id="entry-mob-tab-form" class="active" onclick="switchEntryTab('form')" data-i18n="entry_mobile_edit">✏️ Éditer</button>
+        <button id="entry-mob-tab-preview" onclick="switchEntryTab('preview')" data-i18n="entry_mobile_preview">👁 Aperçu</button>
+      </div>
+      <div id="entry-editor-form">
+        <div class="entry-title-field">
+          <input type="text" id="entry-f-title"
+            data-i18n="entry_title_ph" data-i18n-attr="placeholder"
+            placeholder="Titre de l'entrée"
+            oninput="updateEntryPreview()">
+        </div>
+        <div class="chr-md-hint">
+          <strong data-i18n="entry_md_hint_title"># Titre</strong> &nbsp;
+          <strong data-i18n="entry_md_hint_subtitle">## Sous-titre</strong> &nbsp;
+          <strong data-i18n="entry_md_hint_bold">**gras**</strong> &nbsp;
+          <strong data-i18n="entry_md_hint_italic">*italique*</strong> &nbsp;
+          <strong data-i18n="entry_md_hint_quote">&gt; citation</strong> &nbsp;
+          <strong data-i18n="entry_md_hint_separator">--- séparateur</strong>
+        </div>
+        <div class="entry-content-field">
+          <textarea id="entry-f-content"
+            data-i18n="entry_content_ph" data-i18n-attr="placeholder"
+            placeholder="Rédigez votre entrée en Markdown…"
+            oninput="updateEntryPreview()"></textarea>
+        </div>
+        <div class="entry-form-actions">
+          <button class="btn-cancel" id="entry-back-btn" onclick="showChrDetail(activeChrId)" data-i18n="btn_cancel">Annuler</button>
+          <button class="btn-cancel" id="entry-mob-preview-btn" onclick="switchEntryTab('preview')" style="display:none" data-i18n="btn_preview">Aperçu</button>
+          <button class="btn-save" style="background:var(--sup)" onclick="saveEntryToDB()" data-i18n="btn_save">Sauvegarder</button>
+        </div>
+      </div>
+      <div id="entry-preview-panel">
+        <div class="entry-preview-card" id="entry-preview-content"></div>
+      </div>
+    </div>
+
+    <!-- VUE LECTEUR ENTRÉE -->
+    <div id="view-entry-reader">
+      <div id="entry-reader-content"></div>
+    </div>
+
+    <!-- VUE DOCUMENTS — liste -->
+    <div id="view-documents">
+      <div class="list-header">
+        <div>
+          <h1><span data-i18n="doc_title">Documents</span> <span id="doc-count-badge"></span></h1>
+          <div class="count" data-i18n="doc_subtitle">Documents de campagne</div>
+        </div>
+        <button class="btn-primary" onclick="newDocument()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+          <span data-i18n="doc_new_btn">Nouveau document</span>
+        </button>
+      </div>
+      <div class="doc-follow-wrap">
+        <input type="text" id="doc-follow-input"
+          data-i18n="doc_follow_placeholder" data-i18n-attr="placeholder"
+          placeholder="Code de partage (ex: A3F8C2D1)"
+          maxlength="8" oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter') followDocByCode(this.value)">
+        <button class="btn-follow-doc" onclick="followDocByCode(document.getElementById('doc-follow-input').value)" data-i18n="btn_follow_doc">
+          + S'abonner
+        </button>
+      </div>
+      <div class="roster-filters" id="doc-filters" style="display:none">
+        <span class="filter-label" data-i18n="roster_filter_label">Filtrer</span>
+        <div id="doc-filter-tags-list" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        <button class="filter-clear" id="doc-filter-clear-btn" onclick="clearDocTagFilters()" data-i18n="roster_filter_clear">Tout afficher</button>
+      </div>
+      <div id="doc-grid" class="doc-grid"></div>
+      <div id="doc-empty-state" class="empty-state" style="display:none">
+        <div class="icon">📄</div>
+        <h2 data-i18n="doc_empty_title">Aucun document</h2>
+        <p data-i18n="doc_empty_body">Créez vos premiers documents de campagne ou abonnez-vous à ceux d'autres joueurs.</p>
+        <button class="btn-primary" onclick="newDocument()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+          <span data-i18n="doc_empty_btn">Créer un document</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VUE ÉDITEUR DOCUMENT -->
+    <div id="view-doc-editor">
+      <div id="doc-mobile-tabs">
+        <button id="doc-mob-tab-form" class="active" onclick="switchDocTab('form')" data-i18n="doc_editor_mobile_edit">✏️ Éditer</button>
+        <button id="doc-mob-tab-preview" onclick="switchDocTab('preview')" data-i18n="doc_editor_mobile_preview">👁 Aperçu</button>
+      </div>
+      <div id="doc-editor-form">
+        <div class="doc-editor-fields">
+          <div class="form-section" style="border-bottom:none;padding:20px 20px 0">
+            <div class="form-section-title" data-i18n="doc_editor_illus_section">Illustration d'en-tête</div>
+            <div class="illus-upload-zone" id="doc-illus-zone" onclick="docIllusZoneClick()">
+              <div class="illus-upload-placeholder" id="doc-illus-placeholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <span data-i18n="editor_illus_placeholder">Cliquez pour ajouter une illustration</span>
+              </div>
+              <img id="doc-illus-preview-img" style="display:none">
+              <div class="illus-overlay" id="doc-illus-overlay">
+                <button class="illus-overlay-btn" onclick="event.stopPropagation();document.getElementById('doc-illus-input').click()" data-i18n="editor_illus_change">Changer</button>
+                <button class="illus-overlay-btn danger" onclick="event.stopPropagation();removeDocIllustration()" data-i18n="editor_illus_remove">Supprimer</button>
+              </div>
+              <div class="illus-uploading" id="doc-illus-uploading">
+                <div class="spinner"></div>
+                <span data-i18n="editor_illus_uploading">Upload en cours…</span>
+              </div>
+            </div>
+            <div class="illus-slider-wrap" id="doc-illus-slider-wrap">
+              <label data-i18n="editor_illus_slider">Cadrage</label>
+              <input type="range" id="doc-illus-pos-slider" min="0" max="100" value="0"
+                oninput="updateDocIllusPosition(this.value)">
+            </div>
+          </div>
+          <input type="file" id="doc-illus-input" accept="image/jpeg,image/png,image/webp,image/gif"
+            style="display:none" onchange="uploadDocIllustration(this)">
+          <div class="doc-title-field">
+            <input type="text" id="doc-f-title"
+              data-i18n="doc_editor_title_ph" data-i18n-attr="placeholder"
+              placeholder="Titre du document"
+              oninput="updateDocForm()">
+          </div>
+        </div>
+        <div class="doc-options">
+          <div class="doc-public-row">
+            <label data-i18n="doc_editor_public">Partage public</label>
+            <label class="doc-public-toggle">
+              <input type="checkbox" id="doc-f-public" onchange="updateDocForm()"
+                style="width:auto;accent-color:var(--accent)">
+              <span id="doc-public-label">Privé</span>
+            </label>
+          </div>
+          <div class="doc-share-code-box" id="doc-share-code-box" style="display:none">
+            <span class="code" id="doc-share-code-val">—</span>
+            <button onclick="copyDocShareCode()">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13">
+                <rect x="5" y="5" width="8" height="8" rx="1"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/>
+              </svg>
+              <span data-i18n="share_copy_btn">Copier</span>
+            </button>
+          </div>
+        </div>
+        <div class="doc-options" style="border-top:1px solid var(--border)">
+          <div style="font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px" data-i18n="editor_section_tags">Tags</div>
+          <div style="position:relative">
+            <div class="tags-input-wrap" id="doc-tags-input-wrap" onclick="document.getElementById('doc-tag-text-input').focus()">
+              <div id="doc-tags-chips-container" style="display:contents"></div>
+              <input type="text" id="doc-tag-text-input"
+                data-i18n="editor_tag_ph" data-i18n-attr="placeholder"
+                placeholder="Ajouter un tag…"
+                oninput="onDocTagInput(this.value)"
+                onkeydown="onDocTagKeydown(event)"
+                onfocus="showDocTagAutocomplete(this.value)"
+                autocomplete="off">
+            </div>
+            <div class="tags-autocomplete" id="doc-tags-autocomplete" style="display:none"></div>
+          </div>
+        </div>
+        <div class="doc-md-hint">
+          <strong data-i18n="doc_md_hint_title"># Titre</strong> &nbsp;
+          <strong data-i18n="doc_md_hint_section">## Section</strong> &nbsp;
+          <strong data-i18n="doc_md_hint_bold">**gras**</strong> &nbsp;
+          <strong data-i18n="doc_md_hint_italic">*italique*</strong> &nbsp;
+          <strong data-i18n="doc_md_hint_quote">&gt; citation</strong> &nbsp;
+          <strong data-i18n="doc_md_hint_image">![alt](url) image</strong> &nbsp;
+          <strong data-i18n="doc_md_hint_separator">--- séparateur</strong>
+        </div>
+        <div class="doc-content-field">
+          <textarea id="doc-f-content"
+            data-i18n="doc_editor_content_ph" data-i18n-attr="placeholder"
+            placeholder="Rédigez votre document en Markdown…"
+            oninput="updateDocForm()"></textarea>
+        </div>
+        <div class="doc-form-actions">
+          <button class="btn-cancel" onclick="showView('documents')" data-i18n="btn_cancel">Annuler</button>
+          <button class="btn-cancel" onclick="switchDocTab('preview')" style="display:none" id="doc-mob-preview-btn" data-i18n="btn_preview">Aperçu</button>
+          <button class="btn-save" onclick="saveDocumentToDB()" data-i18n="btn_save">Sauvegarder</button>
+        </div>
+      </div>
+      <div id="doc-preview-panel">
+        <div class="doc-preview-inner" id="doc-preview-content"></div>
+      </div>
+    </div>
+
+    <!-- VUE LECTEUR DOCUMENT -->
+    <div id="view-doc-reader">
+      <div id="doc-reader-content"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         VUE CAMPAGNES — liste
+         ══════════════════════════════════════════════════════ -->
+    <div id="view-campaigns">
+      <div class="list-header">
+        <div>
+          <h1><span data-i18n="campaign_title">Campagnes</span> <span id="campaign-count-badge"></span></h1>
+          <div class="count" data-i18n="campaign_subtitle">Collections de campagne</div>
+        </div>
+        <button class="btn-primary" onclick="newCampaign()"
+          style="background:linear-gradient(135deg,var(--accent),var(--sup));color:var(--bg)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/>
+          </svg>
+          <span data-i18n="campaign_new_btn">Nouvelle campagne</span>
+        </button>
+      </div>
+
+      <div class="campaign-follow-wrap">
+        <input type="text" id="campaign-follow-input"
+          data-i18n="campaign_follow_placeholder" data-i18n-attr="placeholder"
+          placeholder="Code de campagne (ex: A3F8C2D1)"
+          maxlength="8" oninput="this.value=this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter') followCampaignByCode(this.value)">
+        <button class="btn-follow-campaign"
+          onclick="followCampaignByCode(document.getElementById('campaign-follow-input').value)"
+          data-i18n="btn_follow_campaign">+ S'abonner</button>
+      </div>
+
+      <div id="campaign-grid" class="campaign-grid"></div>
+
+      <div id="campaign-empty-state" class="empty-state" style="display:none">
+        <div class="icon">🗂</div>
+        <h2 data-i18n="campaign_empty_title">Aucune campagne</h2>
+        <p data-i18n="campaign_empty_body">Créez votre première campagne pour regrouper et partager vos éléments.</p>
+        <button class="btn-primary" onclick="newCampaign()"
+          style="background:linear-gradient(135deg,var(--accent),var(--sup));color:var(--bg)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/>
+          </svg>
+          <span data-i18n="campaign_empty_btn">Créer une campagne</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VUE DÉTAIL CAMPAGNE -->
+    <div id="view-campaign-detail">
+      <div id="campaign-detail-content"></div>
+    </div>
+
+    <!-- VUE ÉDITEUR CAMPAGNE -->
+    <div id="view-campaign-editor">
+      <div class="campaign-editor-inner">
+
+        <!-- Bloc infos + partage -->
+        <div class="campaign-editor-top">
+          <div class="campaign-editor-actions-top">
+            <h2 style="font-family:var(--font-display);font-size:16px;font-weight:700;
+              letter-spacing:0.06em;text-transform:uppercase;color:var(--text)">
+              <span data-i18n="campaign_new_btn">Nouvelle campagne</span>
+            </h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn-cancel" onclick="showView('campaigns')" data-i18n="btn_cancel">Annuler</button>
+              <button onclick="saveCampaignToDB()" data-i18n="btn_save"
+                style="background:linear-gradient(135deg,var(--accent),var(--sup));color:var(--bg);border:none;
+                  font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:0.08em;
+                  text-transform:uppercase;padding:10px 20px;border-radius:4px;cursor:pointer;
+                  transition:opacity 0.15s"
+                onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">Sauvegarder</button>
+            </div>
+          </div>
+
+          <div class="campaign-editor-fields">
+            <div class="field">
+              <label data-i18n="campaign_editor_title">Titre de la campagne</label>
+              <input type="text" id="campaign-f-title"
+                data-i18n="campaign_editor_title_ph" data-i18n-attr="placeholder"
+                placeholder="Ex: Ombre de New York — Saison 1"
+                oninput="updateCampaignForm()">
+            </div>
+            <div class="field">
+              <label data-i18n="campaign_editor_desc">Description</label>
+              <input type="text" id="campaign-f-description"
+                data-i18n="campaign_editor_desc_ph" data-i18n-attr="placeholder"
+                placeholder="Quelques mots pour décrire cette campagne…"
+                oninput="updateCampaignForm()">
+            </div>
+          </div>
+
+          <div class="campaign-share-row">
+            <label data-i18n="campaign_editor_public">Partage public</label>
+            <label class="campaign-public-toggle">
+              <input type="checkbox" id="campaign-f-public" onchange="updateCampaignForm()"
+                style="width:auto;accent-color:var(--accent)">
+              <span id="campaign-public-label">Privé</span>
+            </label>
+            <div class="campaign-share-code-box" id="campaign-share-code-box" style="display:none">
+              <span class="code" id="campaign-share-code-val">—</span>
+              <button onclick="copyCampaignShareCode()">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13">
+                  <rect x="5" y="5" width="8" height="8" rx="1"/>
+                  <path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/>
+                </svg>
+                <span data-i18n="share_copy_btn">Copier</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Résumé sélection -->
+        <div class="campaign-selection-summary" id="campaign-selection-summary">
+          <span class="summary-text" data-i18n="campaign_selection_none">Aucun élément sélectionné</span>
+          <div class="summary-chips"></div>
+        </div>
+
+        <!-- Hint -->
+        <p style="font-size:12px;color:var(--text3);margin-bottom:20px;line-height:1.6"
+          data-i18n="campaign_editor_items_hint">
+          Sélectionnez les éléments à inclure. Seuls les éléments publics seront transmis aux joueurs abonnés.
+        </p>
+
+        <!-- Sélecteur Personnages -->
+        <div class="campaign-selector-section">
+          <div class="campaign-selector-header">
+            <div class="campaign-selector-title" data-i18n="campaign_type_char_plural">Personnages</div>
+            <button class="campaign-select-all-btn" id="campaign-select-all-char"
+              onclick="selectAllOfType('char')" data-i18n="campaign_select_all">Tout sélectionner</button>
+          </div>
+          <div id="campaign-selector-chars"></div>
+        </div>
+
+        <!-- Sélecteur Chroniques -->
+        <div class="campaign-selector-section">
+          <div class="campaign-selector-header">
+            <div class="campaign-selector-title" data-i18n="campaign_type_chr_plural">Chroniques</div>
+            <button class="campaign-select-all-btn" id="campaign-select-all-chr"
+              onclick="selectAllOfType('chr')" data-i18n="campaign_select_all">Tout sélectionner</button>
+          </div>
+          <div id="campaign-selector-chrs"></div>
+        </div>
+
+        <!-- Sélecteur Documents -->
+        <div class="campaign-selector-section">
+          <div class="campaign-selector-header">
+            <div class="campaign-selector-title" data-i18n="campaign_type_doc_plural">Documents</div>
+            <button class="campaign-select-all-btn" id="campaign-select-all-doc"
+              onclick="selectAllOfType('doc')" data-i18n="campaign_select_all">Tout sélectionner</button>
+          </div>
+          <div id="campaign-selector-docs"></div>
+        </div>
+
+        <!-- Actions bas de page -->
+        <div style="display:flex;gap:8px;justify-content:flex-end;padding:24px 0 40px">
+          <button class="btn-cancel" onclick="showView('campaigns')" data-i18n="btn_cancel">Annuler</button>
+          <button onclick="saveCampaignToDB()" data-i18n="btn_save"
+            style="background:linear-gradient(135deg,var(--accent),var(--sup));color:var(--bg);border:none;
+              font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:0.08em;
+              text-transform:uppercase;padding:10px 24px;border-radius:4px;cursor:pointer;
+              transition:opacity 0.15s"
+            onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">Sauvegarder</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<div id="toast"></div>
+
+<!-- Modale tags personnage suivi -->
+<div id="followed-tag-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)" data-i18n="followed_tags_modal_label">Tags locaux</div>
+        <div id="followed-tag-modal-name" style="font-family:var(--font-display);font-size:18px;font-weight:700;text-transform:uppercase;color:var(--text)"></div>
+      </div>
+      <button onclick="closeFollowedTagModal()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;line-height:1;padding:4px">✕</button>
+    </div>
+    <div id="followed-tag-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px"></div>
+    <div style="position:relative">
+      <div class="tags-input-wrap" onclick="document.getElementById('followed-tag-input').focus()">
+        <input type="text" id="followed-tag-input"
+          data-i18n="followed_tags_input_ph" data-i18n-attr="placeholder"
+          placeholder="Ajouter un tag…"
+          oninput="onFollowedTagInput(this.value)"
+          onkeydown="onFollowedTagKeydown(event)"
+          autocomplete="off">
+      </div>
+      <div class="tags-autocomplete" id="followed-tag-autocomplete" style="display:none"></div>
+    </div>
+    <button class="btn-cancel" onclick="closeFollowedTagModal()" style="align-self:flex-end" data-i18n="followed_tags_close">Fermer</button>
+  </div>
+</div>
+
+<!-- Modale tags document suivi -->
+<div id="followed-doc-tag-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)" data-i18n="followed_tags_modal_label">Tags locaux</div>
+        <div id="followed-doc-tag-modal-name" style="font-family:var(--font-display);font-size:18px;font-weight:700;text-transform:uppercase;color:var(--text)"></div>
+      </div>
+      <button onclick="closeFollowedDocTagModal()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:20px;line-height:1;padding:4px">✕</button>
+    </div>
+    <div id="followed-doc-tag-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px"></div>
+    <div style="position:relative">
+      <div class="tags-input-wrap" onclick="document.getElementById('followed-doc-tag-input').focus()">
+        <input type="text" id="followed-doc-tag-input"
+          data-i18n="followed_tags_input_ph" data-i18n-attr="placeholder"
+          placeholder="Ajouter un tag…"
+          oninput="onFollowedDocTagInput(this.value)"
+          onkeydown="onFollowedDocTagKeydown(event)"
+          autocomplete="off">
+      </div>
+      <div class="tags-autocomplete" id="followed-doc-tag-autocomplete" style="display:none"></div>
+    </div>
+    <button class="btn-cancel" onclick="closeFollowedDocTagModal()" style="align-self:flex-end" data-i18n="followed_tags_close">Fermer</button>
+  </div>
+</div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/Energy-System/sw.js')
+      .catch(err => console.warn('SW registration failed:', err));
+  }
+</script>
+<script src="i18n.js"></script>
+<script src="supabase-client.js"></script>
+<script src="game-system.js"></script>
+<script src="chronicles.js"></script>
+<script src="documents.js"></script>
+<script src="campaigns.js"></script>
+<script src="tags.js"></script>
+<script src="editor.js"></script>
+<script src="scripts.js"></script>
+</body>
+</html>

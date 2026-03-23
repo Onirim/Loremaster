@@ -1,0 +1,26 @@
+{
+  "name": "Energy System",
+  "short_name": "Energy Sys.",
+  "description": "Gestionnaire de campagne pour le jeu de rôle Energy System",
+  "lang": "fr",
+  "start_url": "/Energy-System/",
+  "scope": "/Energy-System/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0e0f13",
+  "background_color": "#0e0f13",
+  "icons": [
+    {
+      "src": "/Energy-System/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Energy-System/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
