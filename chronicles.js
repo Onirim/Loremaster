@@ -611,7 +611,7 @@ async function uploadChrIllustration(input) {
 
   const oldUrl = chrState.illustration_url || '';
   const fileId = editingChrId || ('tmp_' + Date.now());
-  const path   = `${currentUser.id}/chr_${fileId}.jpg`;
+  const path   = `${currentUser.id}/chr_${fileId}_${Date.now()}.jpg`;
 
   const blob = await compressImage(file);
   const { error } = await sb.storage
