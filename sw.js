@@ -6,24 +6,24 @@
 //   - Images Supabase → Network First avec fallback cache
 // ══════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'energy-system-v8';
+const CACHE_NAME = 'site-name-v1';
 
 // Assets mis en cache dès l'installation
 const PRECACHE_ASSETS = [
-  '/Energy-System/',
-  '/Energy-System/index.html',
-  '/Energy-System/styles.css',
-  '/Energy-System/chronicles.css',
-  '/Energy-System/documents.css',
-  '/Energy-System/campaigns.css',
-  '/Energy-System/i18n.js',
-  '/Energy-System/supabase-client.js',
-  '/Energy-System/scripts.js',
-  '/Energy-System/editor.js',
-  '/Energy-System/chronicles.js',
-  '/Energy-System/documents.js',
-  '/Energy-System/campaigns.js',
-  '/Energy-System/tags.js',
+  '/site-name/',
+  '/site-name/index.html',
+  '/site-name/styles.css',
+  '/site-name/chronicles.css',
+  '/site-name/documents.css',
+  '/site-name/campaigns.css',
+  '/site-name/i18n.js',
+  '/site-name/supabase-client.js',
+  '/site-name/scripts.js',
+  '/site-name/editor.js',
+  '/site-name/chronicles.js',
+  '/site-name/documents.js',
+  '/site-name/campaigns.js',
+  '/site-name/tags.js',
 ];
 
 // ── Installation : pré-cache des assets statiques ─────────────
