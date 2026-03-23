@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-// GAME SYSTEM — Fichier à personnaliser pour chaque jeu de rôle
+// Quick TTRPG Manager — Fichier à personnaliser pour chaque jeu de rôle
 //
 // Ce fichier est le SEUL fichier métier à remplacer pour adapter
 // le template à un nouveau système de jeu.
