@@ -189,8 +189,8 @@ function renderDocumentsList() {
   renderDocFilters();
   const grid  = document.getElementById('doc-grid');
   const empty = document.getElementById('doc-empty-state');
-  let ownKeys      = Object.keys(documents);
-  let followedKeys = Object.keys(followedDocuments);
+  let ownKeys      = Object.keys(documents).sort((a,b) => (documents[a].title||'').localeCompare(documents[b].title||''));
+  let followedKeys = Object.keys(followedDocuments).sort((a,b) => (followedDocuments[a].title||'').localeCompare(followedDocuments[b].title||''));
   if (filterFollowedDocs) ownKeys = [];
   if (activeDocTagFilters.length) {
     ownKeys      = ownKeys.filter(id => activeDocTagFilters.every(fid => (docTagMap[id]||[]).includes(fid)));
