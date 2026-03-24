@@ -307,8 +307,8 @@ function renderCampaignsList() {
   const grid  = document.getElementById('campaign-grid');
   const empty = document.getElementById('campaign-empty-state');
 
-  const ownKeys      = Object.keys(campaigns);
-  const followedKeys = Object.keys(followedCampaigns);
+  const ownKeys      = Object.keys(campaigns).sort((a,b) => (campaigns[a].title||'').localeCompare(campaigns[b].title||''));
+  const followedKeys = Object.keys(followedCampaigns).sort((a,b) => (followedCampaigns[a].title||'').localeCompare(followedCampaigns[b].title||''));
   const total = ownKeys.length + followedKeys.length;
 
   document.getElementById('campaign-count-badge').textContent = total ? `(${total})` : '';
