@@ -349,8 +349,8 @@ function showView(view) {
 
 function renderList() {
   renderRosterFilters();
-  let keys         = Object.keys(chars);
-  let followedKeys = Object.keys(followedChars);
+  let keys         = Object.keys(chars).sort((a,b) => (chars[a].name||'').localeCompare(chars[b].name||''));
+  let followedKeys = Object.keys(followedChars).sort((a,b) => (followedChars[a].name||'').localeCompare(followedChars[b].name||''));
   if (filterFollowed) keys = [];
   if (activeTagFilters.length) {
     keys         = keys.filter(id => activeTagFilters.every(fid => (charTagMap[id] || []).includes(fid)));
