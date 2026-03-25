@@ -1,0 +1,658 @@
+/* ══════════════════════════════════════════════════════════════
+   Mystic Falls — Styles Règles du jeu
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Vue ── */
+#view-rulebook {
+  display: none; flex: 1;
+}
+#view-rulebook.active {
+  display: flex;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* ── Layout principal ── */
+.rulebook-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INDEX LATÉRAL (TOC)
+   ══════════════════════════════════════════════════════════════ */
+.rulebook-toc {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.rulebook-toc-header {
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg2);
+  z-index: 2;
+}
+
+.rulebook-toc-title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: var(--glow-accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rulebook-toc-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border2), transparent);
+}
+
+/* Barre de recherche dans le TOC */
+.rulebook-toc-search {
+  margin-top: 10px;
+  position: relative;
+}
+
+.rulebook-toc-search input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text2);
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 6px 10px 6px 28px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.rulebook-toc-search input:focus {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.rulebook-toc-search input::placeholder {
+  color: var(--text3);
+  font-size: 11px;
+}
+
+.rulebook-toc-search-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 13px;
+  height: 13px;
+  color: var(--text3);
+  pointer-events: none;
+}
+
+/* Liste du TOC */
+.rulebook-toc-list {
+  flex: 1;
+  padding: 10px 0 20px;
+  list-style: none;
+}
+
+.rulebook-toc-item {
+  display: block;
+}
+
+.rulebook-toc-link {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+  line-height: 1.4;
+  color: var(--text3);
+  font-size: 12px;
+  font-family: var(--font-body);
+  position: relative;
+}
+
+.rulebook-toc-link:hover {
+  color: var(--text2);
+  background: rgba(192, 132, 232, 0.04);
+}
+
+.rulebook-toc-link.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(192, 132, 232, 0.06);
+}
+
+/* H1 dans le TOC */
+.rulebook-toc-link[data-level="1"] {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text2);
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-top: 4px;
+}
+
+.rulebook-toc-link[data-level="1"]:hover {
+  color: var(--text);
+}
+
+.rulebook-toc-link[data-level="1"].active {
+  color: var(--accent);
+}
+
+/* H2 dans le TOC */
+.rulebook-toc-link[data-level="2"] {
+  padding-left: 28px;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* H3 dans le TOC */
+.rulebook-toc-link[data-level="3"] {
+  padding-left: 42px;
+  font-size: 11px;
+  color: var(--text3);
+  opacity: 0.8;
+}
+
+.rulebook-toc-link[data-level="3"]::before {
+  content: '›';
+  color: var(--border2);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+/* Séparateur entre sections H1 */
+.rulebook-toc-separator {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 20px;
+  opacity: 0.5;
+}
+
+/* Lien masqué par la recherche */
+.rulebook-toc-link.hidden {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONTENU PRINCIPAL
+   ══════════════════════════════════════════════════════════════ */
+.rulebook-content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+  padding: 40px 56px;
+  scroll-behavior: smooth;
+}
+
+.rulebook-content-inner {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* État de chargement */
+.rulebook-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 200px;
+  color: var(--text3);
+}
+
+.rulebook-loading .spinner {
+  width: 28px;
+  height: 28px;
+  border-width: 2px;
+}
+
+/* État d'erreur */
+.rulebook-error {
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  border-radius: 6px;
+  padding: 20px 24px;
+  margin: 32px 0;
+  color: var(--blood-l);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.rulebook-error strong {
+  display: block;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TYPOGRAPHIE MARKDOWN — Rulebook
+   ══════════════════════════════════════════════════════════════ */
+
+.rulebook-body {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.9;
+}
+
+/* Titres */
+.rulebook-body h1 {
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 52px 0 18px;
+  padding-bottom: 14px;
+  position: relative;
+  text-shadow: var(--glow-accent);
+  line-height: 1.15;
+}
+
+.rulebook-body h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), var(--border2), transparent);
+}
+
+/* Ornement décoratif sous H1 */
+.rulebook-body h1::before {
+  content: '✦';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--bg);
+  padding-right: 8px;
+  text-shadow: var(--glow-accent);
+}
+
+.rulebook-body h1:first-child {
+  margin-top: 0;
+}
+
+.rulebook-body h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 40px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rulebook-body h2::before {
+  content: '';
+  width: 3px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--accent), var(--border2));
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.rulebook-body h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin: 28px 0 10px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border2);
+}
+
+/* Paragraphes */
+.rulebook-body p {
+  margin-bottom: 16px;
+}
+
+/* Emphase */
+.rulebook-body strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.rulebook-body em {
+  color: var(--accent);
+  font-style: italic;
+}
+
+/* Listes */
+.rulebook-body ul,
+.rulebook-body ol {
+  padding-left: 0;
+  margin-bottom: 18px;
+  list-style: none;
+}
+
+.rulebook-body ul li {
+  padding: 4px 0 4px 20px;
+  position: relative;
+  color: var(--text2);
+}
+
+.rulebook-body ul li::before {
+  content: '›';
+  position: absolute;
+  left: 4px;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.rulebook-body ol {
+  counter-reset: rulebook-counter;
+}
+
+.rulebook-body ol li {
+  padding: 4px 0 4px 28px;
+  position: relative;
+  counter-increment: rulebook-counter;
+  color: var(--text2);
+}
+
+.rulebook-body ol li::before {
+  content: counter(rulebook-counter);
+  position: absolute;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background: rgba(192, 132, 232, 0.1);
+  border: 1px solid rgba(192, 132, 232, 0.25);
+  border-radius: 3px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 6px;
+}
+
+/* Listes imbriquées */
+.rulebook-body ul ul,
+.rulebook-body ol ol,
+.rulebook-body ul ol,
+.rulebook-body ol ul {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  padding-left: 16px;
+}
+
+.rulebook-body ul ul li::before {
+  content: '—';
+  font-size: 11px;
+  top: 1px;
+}
+
+/* Citations */
+.rulebook-body blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 12px 20px;
+  background: rgba(192, 132, 232, 0.05);
+  border-radius: 0 6px 6px 0;
+  margin: 20px 0;
+  color: var(--text2);
+  font-style: italic;
+  position: relative;
+}
+
+.rulebook-body blockquote::before {
+  content: '"';
+  position: absolute;
+  top: -8px;
+  left: 16px;
+  font-family: var(--font-display);
+  font-size: 36px;
+  color: var(--accent);
+  opacity: 0.3;
+  line-height: 1;
+}
+
+/* Séparateurs */
+.rulebook-body hr {
+  border: none;
+  margin: 40px 0;
+  position: relative;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rulebook-body hr::before {
+  content: '— ✦ —';
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--accent);
+  opacity: 0.5;
+}
+
+/* Code inline */
+.rulebook-body code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 2px 7px;
+  border-radius: 3px;
+  color: var(--accent);
+}
+
+/* Blocs de code */
+.rulebook-body pre {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.rulebook-body pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/* Tableaux */
+.rulebook-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+
+.rulebook-body thead {
+  background: rgba(192, 132, 232, 0.08);
+  border-bottom: 1px solid var(--border2);
+}
+
+.rulebook-body th {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.rulebook-body td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  vertical-align: top;
+}
+
+.rulebook-body tr:last-child td {
+  border-bottom: none;
+}
+
+.rulebook-body tbody tr:hover td {
+  background: rgba(192, 132, 232, 0.03);
+}
+
+/* Images */
+.rulebook-body img {
+  max-width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+/* Liens */
+.rulebook-body a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(192, 132, 232, 0.35);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.rulebook-body a:hover {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Ancre de navigation (offset pour la topbar) ── */
+.rulebook-anchor {
+  display: block;
+  position: relative;
+  top: -20px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOC MOBILE TOGGLE
+   ══════════════════════════════════════════════════════════════ */
+.rulebook-toc-toggle {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 16px;
+}
+
+.rulebook-toc-toggle:hover {
+  border-color: var(--border2);
+  color: var(--accent);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .rulebook-toc {
+    width: 240px;
+  }
+
+  .rulebook-content {
+    padding: 28px 28px;
+  }
+
+  .rulebook-body h1 {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 768px) {
+  #view-rulebook.active {
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  .rulebook-layout {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  .rulebook-toc {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
+  .rulebook-toc-list {
+    display: none;
+  }
+
+  .rulebook-toc-list.mob-open {
+    display: block;
+  }
+
+  .rulebook-toc-toggle {
+    display: flex;
+  }
+
+  .rulebook-toc-header {
+    position: static;
+  }
+
+  .rulebook-content {
+    padding: 20px 18px;
+    overflow: visible;
+    flex: none;
+  }
+
+  .rulebook-body h1 {
+    font-size: 22px;
+  }
+
+  .rulebook-body h2 {
+    font-size: 16px;
+  }
+}
