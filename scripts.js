@@ -299,6 +299,7 @@ function showView(view) {
     'chronicles', 'chr-detail', 'chr-editor', 'entry-editor', 'entry-reader',
     'documents', 'doc-editor', 'doc-reader',
     'campaigns', 'campaign-detail', 'campaign-editor',
+    'rulebook',
   ];
   views.forEach(v => document.getElementById('view-' + v)?.classList.toggle('active', v === view));
 
@@ -306,11 +307,13 @@ function showView(view) {
   const inChr      = ['chronicles', 'chr-detail', 'chr-editor', 'entry-editor', 'entry-reader'].includes(view);
   const inDoc      = ['documents', 'doc-editor', 'doc-reader'].includes(view);
   const inCampaign = ['campaigns', 'campaign-detail', 'campaign-editor'].includes(view);
+  const inRulebook = view === 'rulebook';
 
   document.getElementById('nav-list').classList.toggle('active', inPer);
   document.getElementById('nav-chronicles').classList.toggle('active', inChr);
   document.getElementById('nav-documents').classList.toggle('active', inDoc);
   document.getElementById('nav-campaigns').classList.toggle('active', inCampaign);
+  document.getElementById('nav-rulebook')?.classList.toggle('active', inRulebook);
 
   // Boutons de partage
   const shareButtons = {
@@ -340,6 +343,7 @@ function showView(view) {
   if (view === 'doc-editor')      { switchDocTab('form'); clearHash(); }
   if (view === 'chr-editor')      clearHash();
   if (view === 'campaign-editor') clearHash();
+  if (view === 'rulebook') { clearHash(); loadRulebook(); }
   applyTranslations();
 }
 
