@@ -117,14 +117,24 @@ function rulebookScrollTo(id) {
   if (!target) return;
 
   const contentPane = document.querySelector('.rulebook-content');
-  if (!contentPane) return;
+  if (!contentPane) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
 
-  // Calcule la position relative dans le panneau scrollable
-  const paneTop    = contentPane.getBoundingClientRect().top;
-  const targetTop  = target.getBoundingClientRect().top;
-  const offset     = targetTop - paneTop + contentPane.scrollTop - 24;
+  // Desktop : conteneur interne scrollable.
+  // Mobile : le scroll est porté par la page (overflow visible),
+  // donc on bascule vers scrollIntoView.
+  const isPaneScrollable = contentPane.scrollHeight > contentPane.clientHeight + 1;
 
-  contentPane.scrollTo({ top: offset, behavior: 'smooth' });
+  if (isPaneScrollable) {
+    const paneTop   = contentPane.getBoundingClientRect().top;
+    const targetTop = target.getBoundingClientRect().top;
+    const offset    = targetTop - paneTop + contentPane.scrollTop - 24;
+    contentPane.scrollTo({ top: offset, behavior: 'smooth' });
+  } else {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   // Sur mobile : ferme le TOC après navigation
   const tocList = document.getElementById('rulebook-toc-list');
