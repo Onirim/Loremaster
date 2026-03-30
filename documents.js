@@ -512,7 +512,7 @@ async function uploadDocIllustration(input) {
   document.getElementById('doc-illus-uploading').classList.add('active');
   const oldUrl = docState.illustration_url || '';
   const fileId = editingDocId || ('tmp_' + Date.now());
-  const path   = `${currentUser.id}/doc_${fileId}.jpg`;
+  const path   = `${currentUser.id}/doc_${fileId}_${Date.now()}.jpg`;
   const blob   = await compressImage(file);
   const { error } = await sb.storage
     .from('character-illustrations').upload(path, blob, { upsert:true, contentType:'image/jpeg' });
