@@ -6,7 +6,7 @@
 //   - Images Supabase → Network First avec fallback cache
 // ══════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'site-name-v5';
+const CACHE_NAME = 'site-name-v6';
 
 // Assets mis en cache dès l'installation
 const PRECACHE_ASSETS = [
