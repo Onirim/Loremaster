@@ -1,23 +1,23 @@
 {
-  "name": "Quick TTRPG Manager",
-  "short_name": "TTRPG Manager",
+  "name": "Loremaster TTRPG Manager",
+  "short_name": "LoreM",
   "description": "Gestionnaire de campagne pour jeux de rôles",
   "lang": "fr",
-  "start_url": "/my-site/",
-  "scope": "/my-site/",
+  "start_url": "/Loremaster/",
+  "scope": "/Loremaster/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#0e0f13",
   "background_color": "#0e0f13",
   "icons": [
     {
-      "src": "/my-site/android-chrome-192x192.png",
+      "src": "/Loremaster/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/my-site/android-chrome-512x512.png",
+      "src": "/Loremaster/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
