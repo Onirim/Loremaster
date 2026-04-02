@@ -62,7 +62,9 @@ async function saveDocTagsToDB(docId) {
     for (const tagId of toRemove) {
       const { count } = await sb.from('document_tags')
         .select('*', { count: 'exact', head: true }).eq('tag_id', tagId);
-      if (count === 0) {
+      const { count: followedCount } = await sb.from('followed_document_tags')
+        .select('*', { count: 'exact', head: true }).eq('tag_id', tagId);
+      if (count === 0 && followedCount === 0) {
         await sb.from('doc_tags').delete().eq('id', tagId);
         allDocTags = allDocTags.filter(x => x.id !== tagId);
       }
@@ -686,6 +688,25 @@ async function removeFollowedDocTag(docId, tagId) {
   followedDocTagMap[docId] = (followedDocTagMap[docId] || []).filter(id => id !== tagId);
   await sb.from('followed_document_tags')
     .delete().eq('user_id', currentUser.id).eq('document_id', docId).eq('tag_id', tagId);
+
+  // Vérifie si le tag est encore utilisé (documents propres ou suivis)
+  const usedInOwn = Object.values(docTagMap)
+    .some(ids => ids.includes(tagId));
+  const usedInFollowed = Object.values(followedDocTagMap)
+    .some(ids => ids.includes(tagId));
+
+  if (!usedInOwn && !usedInFollowed) {
+    // Vérifie aussi en base (sécurité)
+    const { count } = await sb.from('document_tags')
+      .select('*', { count: 'exact', head: true }).eq('tag_id', tagId);
+    const { count: countFollowed } = await sb.from('followed_document_tags')
+      .select('*', { count: 'exact', head: true }).eq('tag_id', tagId);
+    if (count === 0 && countFollowed === 0) {
+      await sb.from('doc_tags').delete().eq('id', tagId);
+      allDocTags = allDocTags.filter(x => x.id !== tagId);
+    }
+  }
+
   renderFollowedDocTagChips(docId);
   renderDocumentsList();
 }
