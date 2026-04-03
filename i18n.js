@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-// Quick TTRPG Manager — Internationalisation (i18n)
+// Camply TTRPG Manager — Internationalisation (i18n)
 //
 // Ce fichier contient UNIQUEMENT les clés génériques du template.
 // Les clés spécifiques au jeu (rangs, attributs, pouvoirs...)
