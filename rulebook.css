@@ -286,7 +286,6 @@
 
 /* Ornement décoratif sous H1 */
 .rulebook-body h1::before {
-  content: '✦';
   position: absolute;
   bottom: -8px;
   left: 0;
@@ -318,7 +317,7 @@
   content: '';
   width: 3px;
   height: 18px;
-  background: linear-gradient(180deg, var(--accent), var(--border2));
+  background: var(--accent);
   border-radius: 2px;
   flex-shrink: 0;
 }
