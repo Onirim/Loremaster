@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-// Quick TTRPG Manager Template — Service Worker (cache production)
+// Camply TTRPG Manager Template — Service Worker (cache production)
 // Stratégie :
 //   - Assets statiques (JS, CSS, fonts, icons) → Cache First
 //   - Pages HTML → Network First (toujours fraîche)
