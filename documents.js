@@ -448,7 +448,7 @@ function openDocReader(id) {
 
   // ── Collecte les H1 et H2 pour l'index ────────────────
   const headings = [];
-  tempDiv.querySelectorAll('h1, h2').forEach((el, idx) => {
+  tempDiv.querySelectorAll('h1, h2, h3').forEach((el, idx) => {
     const level = parseInt(el.tagName[1]);
     const text  = el.textContent.trim();
     const anchorId = `doc-h-${idx}-${text.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40)}`;
