@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════
-// Quick TTRPG Manager — Core
+// Camply TTRPG Manager — Core
 // Auth, DB, vues, roster, illustration, routing
 // ══════════════════════════════════════════════════════════════
 
