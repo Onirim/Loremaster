@@ -1,3 +1,5 @@
+![Camply Logo](https://onirim.github.io/Camply/android-chrome-512x512.png)
+
 # Camply - a Lite TTRPG Campaign Manager
 
 Template website for managing tabletop role-playing game campaigns.
