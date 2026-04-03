@@ -1,4 +1,4 @@
-# Lorsmaster TTRPG Campaign Manager
+# Camply - a Lite TTRPG Campaign Manager
 
 Template de site de gestion de campagne pour jeux de rôle sur table.  
 Stack : HTML/CSS/JS vanilla + Supabase + GitHub Pages.
