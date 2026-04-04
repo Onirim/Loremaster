@@ -89,14 +89,19 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Assets locaux (JS, CSS, images statiques) → Cache First
+  // Assets locaux (JS/CSS) → Network First pour éviter les versions périmées
   if (url.hostname === self.location.hostname) {
     // HTML → Network First pour toujours avoir la dernière version
     if (request.destination === 'document') {
       event.respondWith(networkFirstWithCache(request));
       return;
     }
-    // Tout le reste (JS, CSS, fonts locales, icônes) → Cache First
+    // JS/CSS → Network First pour éviter le besoin de hard refresh (Ctrl+Maj+R)
+    if (request.destination === 'script' || request.destination === 'style') {
+      event.respondWith(networkFirstWithCache(request));
+      return;
+    }
+    // Le reste (fonts locales, icônes, images statiques) → Cache First
     event.respondWith(cacheFirst(request));
     return;
   }
