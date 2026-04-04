@@ -109,7 +109,6 @@ async function syncFollowedCampaignItems() {
  
   let newlyFollowed = 0;
  
-  // Personnages
   if (toFollowChar.length) {
     const { data: charRows } = await sb
       .from('characters')
@@ -124,18 +123,15 @@ async function syncFollowedCampaignItems() {
       if (!error) {
         followedIds.push(row.id);
         newlyFollowed++;
-        // ── NOUVEAU : sync des tags du propriétaire ─────────
-        await syncOwnerTagsToMe('char', row.id);
-        // ────────────────────────────────────────────────────
+        await syncOwnerTagsToMe('char', row.id);   // ← sync tags
       }
     }
     if (charRows?.length) {
       await loadFollowedCharsFromDB();
-      await loadTagsFromDB();             // recharge allTags
+      await loadTagsFromDB();
     }
   }
  
-  // Chroniques (inchangé — pas de tags de chronique dans le schéma)
   if (toFollowChr.length) {
     const { data: chrRows } = await sb
       .from('chronicles')
@@ -152,7 +148,6 @@ async function syncFollowedCampaignItems() {
     if (chrRows?.length) await loadFollowedChroniclesFromDB();
   }
  
-  // Documents
   if (toFollowDoc.length) {
     const { data: docRows } = await sb
       .from('documents')
@@ -167,14 +162,12 @@ async function syncFollowedCampaignItems() {
       if (!error) {
         followedDocIds.push(row.id);
         newlyFollowed++;
-        // ── NOUVEAU : sync des tags du propriétaire ─────────
-        await syncOwnerTagsToMe('doc', row.id);
-        // ────────────────────────────────────────────────────
+        await syncOwnerTagsToMe('doc', row.id);    // ← sync tags
       }
     }
     if (docRows?.length) {
       await loadFollowedDocumentsFromDB();
-      await loadDocTagsFromDB();          // recharge allDocTags
+      await loadDocTagsFromDB();
     }
   }
  
