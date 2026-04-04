@@ -20,7 +20,10 @@ SELECT
     PARTITION BY user_id, name
     ORDER BY created_at NULLS LAST, id
   ) AS rn,
-  MIN(id) OVER (PARTITION BY user_id, name) AS keep_id
+  FIRST_VALUE(id) OVER (
+    PARTITION BY user_id, name
+    ORDER BY created_at NULLS LAST, id
+  ) AS keep_id
 FROM public.doc_tags;
 
 -- Repoint owner document tag links to the kept tag id
