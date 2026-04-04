@@ -4,7 +4,8 @@ create table doc_tags (
   user_id uuid references auth.users(id) on delete cascade not null,
   name text not null,
   color text not null,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  unique (user_id, name)
 );
 alter table doc_tags enable row level security;
 create policy "Users manage own doc tags" on doc_tags
