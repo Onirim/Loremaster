@@ -761,21 +761,32 @@ function navigateToCampaign(campaignCode) {
 }
 
 /**
- * Appelle la RPC `sync_owner_tags` pour copier les tags du
- * propriétaire vers l'abonné courant.
- * Silencieux en cas d'erreur (non bloquant).
- *
- * @param {'char'|'doc'} type
- * @param {string}       itemId  UUID de l'objet
+ * Appelle sync_owner_tags via RPC.
+ * p_item_id est passé en string (TEXT) pour éviter le cast UUID
+ * que PostgREST ne sait pas faire automatiquement depuis le JSON.
  */
 async function syncOwnerTagsToMe(type, itemId) {
   try {
-    await sb.rpc('sync_owner_tags', {
+    const { error } = await sb.rpc('sync_owner_tags', {
       p_item_type: type,
-      p_item_id:   itemId,
+      p_item_id:   String(itemId),   // ← TEXT, pas UUID
     });
+    if (error) console.warn('syncOwnerTagsToMe:', error.message);
   } catch (err) {
     console.warn('syncOwnerTagsToMe: non-fatal error', err);
+  }
+}
+ 
+/**
+ * Appelle cleanup_orphan_char_tags ou cleanup_orphan_doc_tags.
+ * À appeler après un désabonnement ou la suppression d'un tag local.
+ */
+async function cleanupOrphanTags(type) {
+  try {
+    const fn = type === 'doc' ? 'cleanup_orphan_doc_tags' : 'cleanup_orphan_char_tags';
+    await sb.rpc(fn, { p_user_id: currentUser.id });
+  } catch (err) {
+    console.warn('cleanupOrphanTags: non-fatal error', err);
   }
 }
 
