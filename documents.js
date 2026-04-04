@@ -183,26 +183,36 @@ async function followDocByCode(code) {
   if (err) { showToast(t('toast_doc_follow_error')); return; }
  
   followedDocIds.push(data.id);
- 
-  // ── NOUVEAU : sync des tags du propriétaire ───────────────
-  await syncOwnerTagsToMe('doc', data.id);
-  // ─────────────────────────────────────────────────────────
- 
+  await syncOwnerTagsToMe('doc', data.id);   // ← sync tags propriétaire
   await loadFollowedDocumentsFromDB();
-  await loadDocTagsFromDB();              // recharge allDocTags avec les nouveaux tags créés
+  await loadDocTagsFromDB();
   document.getElementById('doc-follow-input').value = '';
   renderDocumentsList();
   showToast(ti('toast_doc_subscribed', { title: data.title }));
 }
 
 async function unfollowDocument(id) {
-  await sb.from('followed_documents').delete().eq('user_id', currentUser.id).eq('document_id', id);
+  // 1. Supprime les tags locaux liés à ce document
+  await sb.from('followed_document_tags')
+    .delete()
+    .eq('user_id', currentUser.id)
+    .eq('document_id', id);
+ 
+  // 2. Désabonnement
+  await sb.from('followed_documents')
+    .delete().eq('user_id', currentUser.id).eq('document_id', id);
+ 
   followedDocIds = followedDocIds.filter(i => i !== id);
   delete followedDocuments[id];
+  delete followedDocTagMap[id];
+ 
+  // 3. Purge les tags orphelins dans `doc_tags`
+  await cleanupOrphanTags('doc');
+  await loadDocTagsFromDB();
+ 
   renderDocumentsList();
   showToast(t('toast_doc_unsubscribed'));
 }
-
 // ══════════════════════════════════════════════════════════════
 // RENDU — LISTE
 // ══════════════════════════════════════════════════════════════
@@ -790,26 +800,14 @@ function renderFollowedDocTagChips(docId, tags) {
 async function removeFollowedDocTag(docId, tagId) {
   followedDocTagMap[docId] = (followedDocTagMap[docId] || []).filter(id => id !== tagId);
   await sb.from('followed_document_tags')
-    .delete().eq('user_id', currentUser.id).eq('document_id', docId).eq('tag_id', tagId);
-
-  // Vérifie si le tag est encore utilisé (documents propres ou suivis)
-  const usedInOwn = Object.values(docTagMap)
-    .some(ids => ids.includes(tagId));
-  const usedInFollowed = Object.values(followedDocTagMap)
-    .some(ids => ids.includes(tagId));
-
-  if (!usedInOwn && !usedInFollowed) {
-    // Vérifie aussi en base (sécurité)
-    const { count } = await sb.from('document_tags')
-      .select('*', { count: 'exact', head: true }).eq('tag_id', tagId);
-    const { count: countFollowed } = await sb.from('followed_document_tags')
-      .select('*', { count: 'exact', head: true }).eq('tag_id', tagId);
-    if (count === 0 && countFollowed === 0) {
-      await sb.from('doc_tags').delete().eq('id', tagId);
-      allDocTags = allDocTags.filter(x => x.id !== tagId);
-    }
-  }
-
+    .delete()
+    .eq('user_id', currentUser.id)
+    .eq('document_id', docId)
+    .eq('tag_id', tagId);
+ 
+  await cleanupOrphanTags('doc');
+  await loadDocTagsFromDB();
+ 
   renderFollowedDocTagChips(docId);
   renderDocumentsList();
 }
