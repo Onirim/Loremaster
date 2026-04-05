@@ -364,7 +364,11 @@ function showView(view) {
   const si = document.getElementById('save-indicator');
   if (si) si.classList.remove('show');
 
-  if (view === 'editor')          { switchMobTab('form'); clearHash(); }
+  if (view === 'editor') {
+    const mobilePreviewByDefault = window.matchMedia('(max-width: 768px)').matches;
+    switchMobTab(mobilePreviewByDefault ? 'preview' : 'form');
+    clearHash();
+  }
   if (view === 'list')            { renderList(); clearHash(); }
   if (view === 'chronicles')      { renderChroniclesList(); clearHash(); }
   if (view === 'documents')       { renderDocumentsList(); clearHash(); }
