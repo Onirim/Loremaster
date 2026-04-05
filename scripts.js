@@ -233,6 +233,15 @@ async function followCharByCode(code) {
 }
 
 async function unfollowChar(charId) {
+  const char = followedChars[charId];
+  const blockingCampaigns = await getFollowedCampaignTitlesByItem('char', char?.share_code);
+  if (blockingCampaigns.length) {
+    showToast(ti('toast_unfollow_blocked_by_campaigns', {
+      type: t('campaign_type_char'),
+      campaigns: blockingCampaigns.join(', ')
+    }));
+    return;
+  }
   // 1. Supprime les tags locaux liés à ce personnage
   await sb.from('followed_character_tags')
     .delete()
