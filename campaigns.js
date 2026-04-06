@@ -15,6 +15,46 @@ let campaignState      = null;
 // Sélection en cours dans l'éditeur : sets de share_codes par type
 let campaignSelection  = { char: new Set(), chr: new Set(), doc: new Set() };
 
+// ── Modale de chargement sync ─────────────────────────────────
+function showSyncModal() {
+  let el = document.getElementById('campaign-sync-modal');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'campaign-sync-modal';
+    el.style.cssText = `
+      display:flex; position:fixed; inset:0; z-index:300;
+      background:rgba(0,0,0,0.55); align-items:center; justify-content:center;
+      padding:20px;
+    `;
+    el.innerHTML = `
+      <div style="
+        background:var(--bg2); border:1px solid var(--border);
+        border-radius:8px; padding:32px 40px;
+        display:flex; flex-direction:column; align-items:center; gap:16px;
+        min-width:260px; text-align:center;
+        box-shadow:0 24px 80px rgba(0,0,0,0.5);
+      ">
+        <div class="spinner"></div>
+        <div style="
+          font-family:var(--font-display); font-size:13px; font-weight:700;
+          letter-spacing:0.08em; text-transform:uppercase; color:var(--text);
+        ">${t('campaign_sync_loading_title')}</div>
+        <div style="font-size:12px; color:var(--text3); line-height:1.6;">
+          ${t('campaign_sync_loading_body')}
+        </div>
+      </div>
+    `;
+    document.body.appendChild(el);
+  } else {
+    el.style.display = 'flex';
+  }
+}
+
+function hideSyncModal() {
+  const el = document.getElementById('campaign-sync-modal');
+  if (el) el.style.display = 'none';
+}
+
 // ══════════════════════════════════════════════════════════════
 // CHARGEMENT
 // ══════════════════════════════════════════════════════════════
@@ -292,8 +332,13 @@ async function followCampaignByCode(code) {
 
   followedCampaignIds.push(data.id);
   await loadFollowedCampaignsFromDB();
-  // Synchronise immédiatement les items de cette nouvelle campagne
-  await syncFollowedCampaignItems();
+
+  showSyncModal(); // ← ajout
+  try {
+    await syncFollowedCampaignItems();
+  } finally {
+    hideSyncModal(); // ← ajout
+  }
 
   document.getElementById('campaign-follow-input').value = '';
   renderCampaignsList();
