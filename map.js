@@ -42,6 +42,15 @@ function _ownLayer() {
   return mapOwnLayers[currentMapKey] || null;
 }
 
+
+function _normalizeMapKey(mapKey) {
+  return mapKey || 'default';
+}
+
+function _isMarkerOnCurrentMap(marker) {
+  return _normalizeMapKey(marker?.map_key) === currentMapKey;
+}
+
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
@@ -130,14 +139,14 @@ async function switchMap(key) {
 
   // Ré-affiche les marqueurs suivis (filtrés par la nouvelle carte)
   Object.values(mapFollowedLayers).forEach(({ layer, markers }) => {
-    if (layer.map_key !== currentMapKey) return;
+    if (_normalizeMapKey(layer.map_key) !== currentMapKey) return;
     Object.values(markers)
-      .filter(m => m.map_key === currentMapKey)
+      .filter(m => _isMarkerOnCurrentMap(m))
       .forEach(m => _renderMarker(m, false));
   });
 
   // Ré-affiche les marqueurs propres
-  Object.values(mapMarkers).forEach(m => _renderMarker(m, true));
+  Object.values(mapMarkers).filter(m => _isMarkerOnCurrentMap(m)).forEach(m => _renderMarker(m, true));
   _updateMarkerCount();
 
   _renderLayerPanel();
@@ -338,9 +347,9 @@ async function loadMapMarkersFromDB() {
     .eq('user_id', currentUser.id)
     .eq('map_key', currentMapKey)
     .order('created_at', { ascending: true });
-  if (error) { console.error('Erreur marqueurs:', error); return; }
   mapMarkers = {};
-  (data || []).forEach(m => { mapMarkers[m.id] = m; });
+  if (error) { console.error('Erreur marqueurs:', error); return; }
+  (data || []).forEach(m => { mapMarkers[m.id] = { ...m, map_key: _normalizeMapKey(m.map_key) }; });
 }
 
 async function _saveMarkerToDB(payload, ctx) {
@@ -442,7 +451,7 @@ async function loadFollowedLayersFromDB() {
       .select('id, x, y, name, description, color, map_key').eq('user_id', layer.user_id);
     mapFollowedLayers[layer.id] = {
       layer: { ...layer, _owner_name: ownerMap[layer.user_id] || '?' },
-      markers: Object.fromEntries((markers || []).map(m => [m.id, m])),
+      markers: Object.fromEntries((markers || []).map(m => [m.id, { ...m, map_key: _normalizeMapKey(m.map_key) }])),
     };
   }
 }
@@ -505,19 +514,19 @@ function _renderAllMarkers() {
 
   // Couches suivies en dessous : seulement celles de la carte courante
   Object.values(mapFollowedLayers).forEach(({ layer, markers }) => {
-    if (layer.map_key !== currentMapKey) return;
+    if (_normalizeMapKey(layer.map_key) !== currentMapKey) return;
     Object.values(markers)
-      .filter(m => m.map_key === currentMapKey)
+      .filter(m => _isMarkerOnCurrentMap(m))
       .forEach(m => _renderMarker(m, false));
   });
 
   // Marqueurs propres par-dessus (déjà filtrés par loadMapMarkersFromDB)
-  Object.values(mapMarkers).forEach(m => _renderMarker(m, true));
+  Object.values(mapMarkers).filter(m => _isMarkerOnCurrentMap(m)).forEach(m => _renderMarker(m, true));
   _updateMarkerCount();
 }
 
 function _renderMarker(m, owned) {
-  if (!_mapCanvas) return;
+  if (!_mapCanvas || !_isMarkerOnCurrentMap(m)) return;
   const { x: cx, y: cy } = _m2c(m.x, m.y);
   const size = MAP_CONFIG.markerSize;
   const inv  = 1 / mapTransform.scale;
@@ -565,11 +574,11 @@ function _refreshMarkerDOM(m) {
 function _updateMarkerCount() {
   const el = document.getElementById('map-marker-count');
   if (!el) return;
-  const own      = Object.keys(mapMarkers).length;
+  const own      = Object.values(mapMarkers).filter(m => _isMarkerOnCurrentMap(m)).length;
   const followed = Object.values(mapFollowedLayers)
-    .filter(({ layer }) => layer.map_key === currentMapKey)
+    .filter(({ layer }) => _normalizeMapKey(layer.map_key) === currentMapKey)
     .reduce((acc, { markers }) =>
-      acc + Object.values(markers).filter(m => m.map_key === currentMapKey).length, 0);
+      acc + Object.values(markers).filter(m => _isMarkerOnCurrentMap(m)).length, 0);
   const total = own + followed;
   el.innerHTML = `<span>${total}</span> marqueur${total !== 1 ? 's' : ''}`;
 }
