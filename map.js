@@ -468,9 +468,10 @@ async function followMapLayerByCode(code) {
 
   const { error: err } = await sb.from('followed_map_layers')
     .insert({ user_id: currentUser.id, layer_id: data.id });
-  if (err) { showToast(MAP_CONFIG.labels.toastError); return; }
+  const isConflict = err && (err.code === '23505' || err.status === 409);
+  if (err && !isConflict) { showToast(MAP_CONFIG.labels.toastError); return; }
 
-  mapFollowedIds.push(data.id);
+  if (!mapFollowedIds.includes(data.id)) mapFollowedIds.push(data.id);
   await loadFollowedLayersFromDB();
 
   // Si la couche correspond à une autre carte, basculer dessus
@@ -856,6 +857,10 @@ function toggleMapPanel() {
 /** Navigation depuis une campagne : bascule sur la bonne carte. */
 async function navigateToMap(shareCode) {
   showView('map');
+  await Promise.all([
+    loadAllOwnLayersFromDB(),
+    loadFollowedLayersFromDB(),
+  ]);
 
   // Cherche la carte correspondant au share_code
   let targetMapKey = null;
@@ -883,14 +888,20 @@ async function syncFollowedMapLayers(shareCodes) {
     .select('id, title, user_id, is_public, share_code, map_key')
     .in('share_code', shareCodes).eq('is_public', true);
   let added = 0;
+  let shouldReload = false;
   for (const row of (layerRows || [])) {
     if (row.user_id === currentUser.id) continue;
-    if (mapFollowedIds.includes(row.id)) continue;
+    if (mapFollowedIds.includes(row.id)) { shouldReload = true; continue; }
     const { error } = await sb.from('followed_map_layers')
       .insert({ user_id: currentUser.id, layer_id: row.id });
-    if (!error) { mapFollowedIds.push(row.id); added++; }
+    const isConflict = error && (error.code === '23505' || error.status === 409);
+    if (!error || isConflict) {
+      if (!mapFollowedIds.includes(row.id)) mapFollowedIds.push(row.id);
+      if (!error) added++;
+      shouldReload = true;
+    }
   }
-  if (added) {
+  if (shouldReload) {
     await loadFollowedLayersFromDB();
     _renderAllMarkers();
     _renderLayerPanel();
