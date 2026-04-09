@@ -36,6 +36,7 @@ const TRANSLATIONS = {
     nav_campaigns:  'Campagnes',
     nav_rulebook:   'Règles',
     topbar_share:   'Partager',
+    nav_map: 'Carte',
 
     // ── User menu ─────────────────────────────────────────────
     user_logout: 'Se déconnecter',
@@ -293,6 +294,7 @@ const TRANSLATIONS = {
     nav_campaigns:  'Campaigns',
     nav_rulebook:   'Rules',
     topbar_share:   'Share',
+    nav_map: 'Map',
 
     // ── User menu ─────────────────────────────────────────────
     user_logout: 'Log out',
