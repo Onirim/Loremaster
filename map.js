@@ -532,15 +532,13 @@ function _renderMarker(m, owned) {
   const inv  = 1 / mapTransform.scale;
 
   const el = document.createElement('div');
-  el.className = 'map-marker' + (owned ? '' : ' map-marker-followed');
+  el.className = 'map-marker';
   el.id        = 'marker-' + m.id;
   el.style.left      = cx + 'px';
   el.style.top       = cy + 'px';
   el.style.transform = `translate(-50%, -100%) scale(${inv})`;
 
-  const opacity  = owned ? '0.92' : '0.65';
-  const innerDot = !owned
-    ? `<circle cx="14" cy="14" r="2.5" fill="${m.color}" opacity="0.7"/>` : '';
+  const opacity  = '0.92';
 
   el.innerHTML = `
     <svg class="map-marker-pin"
@@ -549,7 +547,6 @@ function _renderMarker(m, owned) {
       <path d="M14 0C6.268 0 0 6.268 0 14c0 9.333 14 26 14 26s14-16.667 14-26C28 6.268 21.732 0 14 0z"
         fill="${m.color}" opacity="${opacity}"/>
       <circle cx="14" cy="14" r="5.5" fill="white" opacity="0.95"/>
-      ${innerDot}
     </svg>
     <div class="map-marker-label">${esc(m.name)}</div>`;
 

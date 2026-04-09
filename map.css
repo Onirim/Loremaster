@@ -508,17 +508,6 @@
 }
 .map-modal-save-btn:hover { background: var(--accent); transform: translateY(-1px); }
 
-/* ══════════════════════════════════════════════════════════════
-   MARQUEURS SUIVIS — distinction visuelle
-   ══════════════════════════════════════════════════════════════ */
-.map-marker-followed {
-  opacity: 0.85;
-}
-.map-marker-followed .map-marker-label {
-  font-style: italic;
-  color: var(--text3);
-}
-
 /* Indicateur "par Xxx" dans la popup */
 .map-popup-owner {
   padding: 0 14px 8px;
