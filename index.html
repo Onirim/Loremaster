@@ -161,28 +161,6 @@
         </svg>
         <span data-i18n="topbar_share">Partager</span>
       </button>
-      <div id="map-share-controls" style="display:none">
-        <label class="map-topbar-public-toggle">
-          <input type="checkbox" id="map-topbar-public" onchange="_onTopbarMapPublicToggle(this.checked)">
-          <span id="map-topbar-public-label">Privé</span>
-        </label>
-        <div class="map-topbar-share-code" id="map-topbar-share-code" style="display:none">
-          <span class="code" id="map-topbar-share-code-val">—</span>
-          <button onclick="_copyTopbarMapShareCode()">
-            Copier
-          </button>
-        </div>
-        <div class="map-topbar-follow-wrap">
-          <input type="text" id="map-topbar-follow-input"
-            placeholder="Code de partage (8 car.)"
-            maxlength="8"
-            oninput="this.value=this.value.toUpperCase()"
-            onkeydown="if(event.key==='Enter') followMapLayerByCode(this.value)">
-          <button onclick="followMapLayerByCode(document.getElementById('map-topbar-follow-input').value)">
-            + Suivre
-          </button>
-        </div>
-      </div>
       <div class="user-menu-wrap" id="user-menu-wrap">
         <button class="user-btn" onclick="toggleUserMenu()">
           <div class="avatar" id="user-avatar">?</div>
