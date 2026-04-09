@@ -304,8 +304,8 @@ async function loadMapMarkersFromDB() {
   _updateMarkerCount();
 }
 
-async function _saveMarkerToDB(payload) {
-  if (mapModalCtx.mode === 'add') {
+async function _saveMarkerToDB(payload, ctx) {
+  if (ctx.mode === 'add') {
     const { data, error } = await sb
       .from('map_markers')
       .insert({ ...payload, user_id: currentUser.id })
@@ -317,7 +317,7 @@ async function _saveMarkerToDB(payload) {
     _updateMarkerCount();
     showToast(MAP_CONFIG.labels.toastAdded);
   } else {
-    const id = mapModalCtx.id;
+    const id = ctx.id;
     const { data, error } = await sb
       .from('map_markers')
       .update(payload)
@@ -538,18 +538,21 @@ async function submitMapMarkerModal() {
   const desc = document.getElementById('map-modal-desc').value.trim();
   if (!name) { document.getElementById('map-modal-name').focus(); return; }
 
+  // Snapshot du contexte AVANT de fermer la modale (qui remet mapModalCtx à null)
+  const ctx = { ...mapModalCtx };
+
   const payload = {
     name,
     description: desc,
     color:       mapModalColor,
-    ...(mapModalCtx.mode === 'add' && {
-      x: Math.max(0, Math.min(1, mapModalCtx.x)),
-      y: Math.max(0, Math.min(1, mapModalCtx.y)),
+    ...(ctx.mode === 'add' && {
+      x: Math.max(0, Math.min(1, ctx.x)),
+      y: Math.max(0, Math.min(1, ctx.y)),
     }),
   };
 
   closeMapMarkerModal();
-  await _saveMarkerToDB(payload);
+  await _saveMarkerToDB(payload, ctx);
 }
 
 // ══════════════════════════════════════════════════════════════
