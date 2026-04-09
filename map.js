@@ -76,6 +76,7 @@ async function initMap() {
     loadFollowedLayersFromDB(),
   ]);
 
+  _renderAllMarkers();
   _renderLayerPanel();
   mapLoaded = true;
 }
@@ -456,6 +457,23 @@ async function loadFollowedLayersFromDB() {
   }
 }
 
+async function _ensureFollowedLayerRow(layerId) {
+  const { data: existing, error: checkError } = await sb.from('followed_map_layers')
+    .select('layer_id')
+    .eq('user_id', currentUser.id)
+    .eq('layer_id', layerId)
+    .maybeSingle();
+
+  if (checkError) return { ok: false, already: false, error: checkError };
+  if (existing) return { ok: true, already: true, error: null };
+
+  const { error: insertError } = await sb.from('followed_map_layers')
+    .insert({ user_id: currentUser.id, layer_id: layerId });
+  if (insertError) return { ok: false, already: false, error: insertError };
+
+  return { ok: true, already: false, error: null };
+}
+
 async function followMapLayerByCode(code) {
   if (!code.trim()) return;
   const clean = code.trim().toUpperCase();
@@ -466,10 +484,8 @@ async function followMapLayerByCode(code) {
   if (data.user_id === currentUser.id) { showToast(MAP_CONFIG.labels.toastLayerOwn); return; }
   if (mapFollowedIds.includes(data.id)) { showToast(MAP_CONFIG.labels.toastLayerAlreadyFollowed); return; }
 
-  const { error: err } = await sb.from('followed_map_layers')
-    .insert({ user_id: currentUser.id, layer_id: data.id });
-  const isConflict = err && (err.code === '23505' || err.status === 409);
-  if (err && !isConflict) { showToast(MAP_CONFIG.labels.toastError); return; }
+  const followRes = await _ensureFollowedLayerRow(data.id);
+  if (!followRes.ok) { showToast(MAP_CONFIG.labels.toastError); return; }
 
   if (!mapFollowedIds.includes(data.id)) mapFollowedIds.push(data.id);
   await loadFollowedLayersFromDB();
@@ -892,12 +908,10 @@ async function syncFollowedMapLayers(shareCodes) {
   for (const row of (layerRows || [])) {
     if (row.user_id === currentUser.id) continue;
     if (mapFollowedIds.includes(row.id)) { shouldReload = true; continue; }
-    const { error } = await sb.from('followed_map_layers')
-      .insert({ user_id: currentUser.id, layer_id: row.id });
-    const isConflict = error && (error.code === '23505' || error.status === 409);
-    if (!error || isConflict) {
+    const followRes = await _ensureFollowedLayerRow(row.id);
+    if (followRes.ok) {
       if (!mapFollowedIds.includes(row.id)) mapFollowedIds.push(row.id);
-      if (!error) added++;
+      if (!followRes.already) added++;
       shouldReload = true;
     }
   }
