@@ -801,6 +801,59 @@
   font-style: italic;
 }
 
+/* Conteneur du sélecteur dans la toolbar */
+.map-selector-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+ 
+.map-selector-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  white-space: nowrap;
+}
+ 
+.map-selector {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0 28px 0 10px;
+  height: 34px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, color 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+  /* Chevron SVG encodé */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%23565c6e' stroke-width='1.5'%3E%3Cpolyline points='4,6 8,10 12,6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+.map-selector:hover  { border-color: var(--accent); color: var(--accent); }
+.map-selector:focus  { border-color: var(--accent); }
+.map-selector option { background: var(--bg3); }
+ 
+/* Séparateur visuel entre le sélecteur et les contrôles de zoom */
+.map-selector-wrap + .map-zoom-group {
+  margin-left: 4px;
+}
+ 
+@media (max-width: 768px) {
+  .map-selector-label { display: none; }
+  .map-selector        { font-size: 11px; height: 30px; padding: 0 24px 0 8px; }
+}
+
 /* ══════════════════════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════════════════════ */
