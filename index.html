@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="documents.css" />
 <link rel="stylesheet" href="campaigns.css" />
 <link rel="stylesheet" href="rulebook.css" />
+<link rel="stylesheet" href="map.css" />
 <link rel="stylesheet" href="transfert.css" />
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
 <script>
@@ -88,6 +89,7 @@
       <button id="nav-chronicles" onclick="showView('chronicles')" data-i18n="nav_chronicles">Chroniques</button>
       <button id="nav-documents" onclick="showView('documents')" data-i18n="nav_documents">Documents</button>
       <button id="nav-campaigns" onclick="showView('campaigns')" data-i18n="nav_campaigns">Campagnes</button>
+      <button id="nav-map" onclick="showView('map')" data-i18n="nav_map">Carte</button>
       <button id="nav-rulebook" onclick="showView('rulebook')" data-i18n="nav_rulebook">Règles</button>
     </nav>
 
@@ -939,6 +941,100 @@
  
       </div>
     </div>
+
+    <!-- VUE CARTE -->
+    <div id="view-map">
+     
+      <!-- Barre d'outils -->
+      <div class="map-toolbar">
+        <!-- Contrôles de zoom -->
+        <div class="map-zoom-group">
+          <button class="map-zoom-btn" onclick="mapZoomOut()" title="Zoom −">−</button>
+          <div class="map-zoom-value" id="map-zoom-value" onclick="mapZoomReset()" title="Réinitialiser la vue">100%</div>
+          <button class="map-zoom-btn" onclick="mapZoomIn()" title="Zoom +">+</button>
+        </div>
+     
+        <!-- Bouton reset vue -->
+        <button class="map-reset-btn" onclick="mapZoomReset()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+            width="13" height="13">
+            <path d="M1 8a7 7 0 1 0 7-7"/>
+            <polyline points="1,2 1,8 7,8"/>
+          </svg>
+          Vue initiale
+        </button>
+     
+        <!-- Hint clavier -->
+        <div class="map-hint">
+          <kbd>Maj</kbd> + clic gauche pour ajouter un marqueur
+        </div>
+     
+        <!-- Compteur -->
+        <div class="map-marker-count" id="map-marker-count">
+          <span>0</span> marqueur
+        </div>
+      </div>
+     
+      <!-- Zone de carte -->
+      <div class="map-viewport" id="map-viewport">
+        <div class="map-canvas" id="map-canvas"></div>
+      </div>
+     
+    </div>
+     
+    <!-- Modale ajout / édition marqueur -->
+    <div id="map-marker-modal">
+      <div id="map-marker-modal-panel">
+        <div class="map-modal-header">
+          <div class="map-modal-title">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              width="15" height="15">
+              <path d="M8 1C5.24 1 3 3.24 3 6c0 4.17 5 9 5 9s5-4.83 5-9c0-2.76-2.24-5-5-5z"/>
+              <circle cx="8" cy="6" r="2"/>
+            </svg>
+            <span id="map-modal-title-text">Nouveau marqueur</span>
+          </div>
+          <button class="map-modal-close" onclick="closeMapMarkerModal()">✕</button>
+        </div>
+     
+        <div class="map-modal-body">
+          <!-- Nom -->
+          <div class="map-modal-field">
+            <label>Nom</label>
+            <input type="text" id="map-modal-name"
+              placeholder="Ex : Taverne du Dragon d'Or"
+              maxlength="80"
+              autocomplete="off">
+          </div>
+     
+          <!-- Description -->
+          <div class="map-modal-field">
+            <label>Description</label>
+            <textarea id="map-modal-desc"
+              placeholder="Notes, description du lieu…"
+              maxlength="1000"></textarea>
+          </div>
+     
+          <!-- Couleur -->
+          <div class="map-modal-field">
+            <label>Couleur</label>
+            <div class="map-color-swatches" id="map-modal-swatches"></div>
+          </div>
+        </div>
+     
+        <div class="map-modal-footer">
+          <button class="btn-cancel" onclick="closeMapMarkerModal()">Annuler</button>
+          <button class="map-modal-save-btn" onclick="submitMapMarkerModal()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"
+              width="12" height="12">
+              <polyline points="2,8 6,12 14,4"/>
+            </svg>
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+    
   </div><!-- /main -->
 </div><!-- /app -->
 
@@ -1019,7 +1115,9 @@
 <script src="rulebook.js"></script>
 <script src="tags.js"></script>
 <script src="editor.js"></script>
-<script src="transfert.js"></script>  
+<script src="transfert.js"></script>
+<script src="map-config.js"></script>
+<script src="map.js"></script>
 <script src="scripts.js"></script>
   <div id="transfer-modal">
   <div id="transfer-modal-panel"></div>
