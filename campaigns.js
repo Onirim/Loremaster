@@ -216,6 +216,11 @@ async function syncFollowedCampaignItems() {
       await loadDocTagsFromDB();
     }
   }
+
+  if (toFollowMap.length && typeof syncFollowedMapLayers === 'function') {
+    const addedMaps = await syncFollowedMapLayers(toFollowMap);
+    newlyFollowed += addedMaps || 0;
+  }
  
   if (newlyFollowed > 0) {
     showToast(ti('toast_campaign_synced', { n: newlyFollowed }));
@@ -491,6 +496,7 @@ function renderCampaignDetail() {
   const isOwn = !!campaigns[activeCampaignId];
   const items = campaignItems[activeCampaignId] || [];
   const mapSources = getCampaignMapSources();
+  const mapConfigByKey = new Map((MAP_CONFIG?.maps || []).map(m => [m.key, m]));
 
   // Résolution des noms à partir des stores en mémoire
   const resolve = (item) => {
@@ -509,7 +515,8 @@ function renderCampaignDetail() {
     } else {
       const found = mapSources.own.find(x => x.share_code === item.share_code)
                  || mapSources.followed.find(x => x.share_code === item.share_code);
-      return { name: found?.title || item.share_code, sub: '' };
+      const mapName = found?.map_key ? (mapConfigByKey.get(found.map_key)?.name || found.map_key) : '';
+      return { name: found?.title || item.share_code, sub: mapName };
     }
   };
 
