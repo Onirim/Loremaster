@@ -50,6 +50,8 @@ function populateEditor() {
 
   const bgField = document.getElementById('f-background');
   if (bgField) bgField.value = state.background || '';
+  const descriptionField = document.getElementById('f-description');
+  if (descriptionField) descriptionField.value = state.description || '';
 
   renderTagChips();
   setIllusPreview(state.illustration_url || '', state.illustration_position || 0);
@@ -284,6 +286,7 @@ function updatePreview() {
   state.subtitle   = document.getElementById('f-sub').value;
   state.race_class = document.getElementById('f-race-class').value;
   state.level      = parseInt(document.getElementById('f-level')?.value) ?? 0;
+  state.description = document.getElementById('f-description')?.value || state.description || '';
   state.background = document.getElementById('f-background')?.value || state.background || '';
 
   const pubCb = document.getElementById('f-public');
