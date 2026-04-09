@@ -516,7 +516,7 @@ function renderCampaignDetail() {
       const found = mapSources.own.find(x => x.share_code === item.share_code)
                  || mapSources.followed.find(x => x.share_code === item.share_code);
       const mapName = found?.map_key ? (mapConfigByKey.get(found.map_key)?.name || found.map_key) : '';
-      return { name: found?.title || item.share_code, sub: mapName };
+      return { name: found?.title || mapName || item.share_code, sub: mapName };
     }
   };
 
