@@ -62,6 +62,9 @@ function renderCharCardBody(c) {
   const descriptionExcerpt = rawDescription
     ? rawDescription.slice(0, maxDescriptionLength).trimEnd() + (rawDescription.length > maxDescriptionLength ? '…' : '')
     : '';
+  const descriptionHtml = descriptionExcerpt
+    ? `<div class="card-desc">${esc(descriptionExcerpt)}</div>`
+    : '';
 
   return `
     <div class="card-name">${esc(c.name) || '—'}</div>
@@ -69,7 +72,7 @@ function renderCharCardBody(c) {
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
       ${rcTag}${lvlTag}
     </div>
-    ${charsHtml}
+    ${descriptionHtml}
   `;
 }
 
@@ -157,7 +160,7 @@ function renderCharSheet(data) {
     <div class="preview-section-title">${t('section_background')}</div>
     <div class="background-preview">${esc(data.background)}</div>` : '';
 
-  return `${illusHtml}${headerHtml}${charsHtml}${skillsHtml}${traitsHtml}${bgHtml}`;
+  return `${illusHtml}${headerHtml}${charsHtml}${skillsHtml}${traitsHtml}${descriptionHtml}${bgHtml}`;
 }
 
 
@@ -181,6 +184,7 @@ const GAME_I18N = {
     section_characteristics: 'Caractéristiques',
     section_skills:          'Compétences',
     section_traits:          'Traits',
+    section_description:     'Description',
     section_background:      'Background',
 
     // Éditeur — caractéristiques
@@ -228,6 +232,7 @@ const GAME_I18N = {
     section_characteristics: 'Characteristics',
     section_skills:          'Skills',
     section_traits:          'Traits',
+    section_description:     'Description',
     section_background:      'Background',
 
     editor_section_characteristics:   'Characteristics',
