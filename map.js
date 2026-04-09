@@ -77,6 +77,7 @@ async function initMap() {
   ]);
 
   _renderLayerPanel();
+  renderMapTopbarShareControls();
   mapLoaded = true;
 }
 
@@ -150,6 +151,7 @@ async function switchMap(key) {
   _updateMarkerCount();
 
   _renderLayerPanel();
+  renderMapTopbarShareControls();
 }
 
 // ── Construction de l'image ───────────────────────────────────
@@ -399,10 +401,10 @@ async function loadAllOwnLayersFromDB() {
 }
 
 async function saveOwnLayerToDB() {
-  const title  = document.getElementById('map-layer-title')?.value.trim() || '';
-  const desc   = document.getElementById('map-layer-desc')?.value.trim()  || '';
-  const pub    = document.getElementById('map-layer-public')?.checked      || false;
-  const payload = { title, description: desc, is_public: pub };
+  const cfg = _getCurrentMapConfig();
+  const title = cfg?.name || 'Carte';
+  const pub = document.getElementById('map-topbar-public')?.checked || false;
+  const payload = { title, description: '', is_public: pub };
 
   const layer = _ownLayer();
   if (layer?.id) {
@@ -418,6 +420,7 @@ async function saveOwnLayerToDB() {
     if (error) { showToast(MAP_CONFIG.labels.toastError); return; }
     mapOwnLayers[data.map_key] = data;
   }
+  renderMapTopbarShareControls();
   _renderLayerPanel();
   showToast(MAP_CONFIG.labels.toastSaved);
 }
@@ -481,7 +484,8 @@ async function followMapLayerByCode(code) {
   }
 
   _renderLayerPanel();
-  document.getElementById('map-follow-input').value = '';
+  const followInput = document.getElementById('map-topbar-follow-input');
+  if (followInput) followInput.value = '';
   const msg = MAP_CONFIG.labels.toastLayerSubscribed.replace('${title}', data.title || clean);
   showToast(msg);
 }
@@ -737,22 +741,7 @@ function _renderLayerPanel() {
   if (!panel) return;
 
   const layer    = _ownLayer();
-  const isPublic = layer?.is_public || false;
-  const code     = layer?.share_code || null;
   const cfg      = _getCurrentMapConfig();
-
-  const shareCodeHtml = isPublic && code ? `
-    <div class="map-share-code-box">
-      <span class="map-share-code-val">${code}</span>
-      <button onclick="_copyMapShareCode('${code}')">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
-          width="12" height="12">
-          <rect x="5" y="5" width="8" height="8" rx="1"/>
-          <path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/>
-        </svg>
-        Copier
-      </button>
-    </div>` : '';
 
   // Ne montre que les couches suivies pour la carte courante
   const followedForThisMap = Object.values(mapFollowedLayers)
@@ -782,50 +771,20 @@ function _renderLayerPanel() {
 
       <div class="map-panel-section">
         <div class="map-panel-title">
-          Ma couche
+          Couche active
           ${cfg ? `<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text3)"> — ${esc(cfg.name)}</span>` : ''}
         </div>
-        <div class="map-panel-field">
-          <label>Titre</label>
-          <input type="text" id="map-layer-title"
-            value="${esc(layer?.title || '')}"
-            placeholder="Ex : Carte de Théodric">
+        <div class="map-panel-field" style="margin-bottom:0">
+          <label>Objet partagé</label>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:8px 10px;color:var(--text2);font-size:12px">
+            ${esc(layer?.title || cfg?.name || 'Carte')}
+          </div>
         </div>
-        <div class="map-panel-field">
-          <label>Description</label>
-          <textarea id="map-layer-desc"
-            placeholder="Notes pour les joueurs…">${esc(layer?.description || '')}</textarea>
-        </div>
-        <div class="map-panel-public-row">
-          <label>Partage public</label>
-          <label class="map-panel-toggle">
-            <input type="checkbox" id="map-layer-public"
-              ${isPublic ? 'checked' : ''}
-              onchange="_onLayerPublicChange(this.checked)">
-            <span id="map-layer-public-label">${isPublic ? 'Public (code actif)' : 'Privé'}</span>
-          </label>
-        </div>
-        ${shareCodeHtml}
-        <button class="map-panel-save-btn" onclick="saveOwnLayerToDB()">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"
-            width="12" height="12"><polyline points="2,8 6,12 14,4"/></svg>
-          Enregistrer
-        </button>
       </div>
 
       <div class="map-panel-section">
         <div class="map-panel-title">Couches suivies
           ${cfg ? `<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text3)"> — ${esc(cfg.name)}</span>` : ''}
-        </div>
-        <div class="map-follow-input-wrap">
-          <input type="text" id="map-follow-input"
-            placeholder="Code de partage (8 car.)"
-            maxlength="8"
-            oninput="this.value=this.value.toUpperCase()"
-            onkeydown="if(event.key==='Enter') followMapLayerByCode(this.value)">
-          <button onclick="followMapLayerByCode(document.getElementById('map-follow-input').value)">
-            + Suivre
-          </button>
         </div>
         <div class="map-followed-list">${followedHtml}</div>
       </div>
@@ -833,15 +792,55 @@ function _renderLayerPanel() {
     </div>`;
 }
 
-function _onLayerPublicChange(checked) {
-  const label = document.getElementById('map-layer-public-label');
-  if (label) label.textContent = checked ? 'Public (code actif)' : 'Privé';
-}
-
 function _copyMapShareCode(code) {
   navigator.clipboard.writeText(code)
     .then(() => showToast(`Code "${code}" copié !`))
     .catch(() => prompt('Code de partage :', code));
+}
+
+function renderMapTopbarShareControls() {
+  const wrap  = document.getElementById('map-share-controls');
+  if (!wrap) return;
+
+  const cfg   = _getCurrentMapConfig();
+  const layer = _ownLayer();
+  const isPublic = layer?.is_public || false;
+  const code = layer?.share_code || null;
+
+  const pubInput = document.getElementById('map-topbar-public');
+  if (pubInput) pubInput.checked = isPublic;
+
+  const pubLabel = document.getElementById('map-topbar-public-label');
+  if (pubLabel) pubLabel.textContent = isPublic
+    ? `Public — ${cfg?.name || 'Carte'}`
+    : `Privé — ${cfg?.name || 'Carte'}`;
+
+  const codeBox = document.getElementById('map-topbar-share-code');
+  const codeVal = document.getElementById('map-topbar-share-code-val');
+  if (codeBox && codeVal) {
+    if (isPublic && code) {
+      codeVal.textContent = code;
+      codeBox.style.display = 'flex';
+    } else {
+      codeVal.textContent = '—';
+      codeBox.style.display = 'none';
+    }
+  }
+}
+
+async function _onTopbarMapPublicToggle(checked) {
+  const pubLabel = document.getElementById('map-topbar-public-label');
+  const cfg = _getCurrentMapConfig();
+  if (pubLabel) pubLabel.textContent = checked
+    ? `Public — ${cfg?.name || 'Carte'}`
+    : `Privé — ${cfg?.name || 'Carte'}`;
+  await saveOwnLayerToDB();
+}
+
+function _copyTopbarMapShareCode() {
+  const code = document.getElementById('map-topbar-share-code-val')?.textContent;
+  if (!code || code === '—') return;
+  _copyMapShareCode(code);
 }
 
 function toggleMapPanel() {

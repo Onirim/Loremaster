@@ -363,6 +363,11 @@ function showView(view) {
     const el = document.getElementById(id);
     if (el) el.style.display = visible ? 'flex' : 'none';
   });
+  const mapShareControls = document.getElementById('map-share-controls');
+  if (mapShareControls) mapShareControls.style.display = view === 'map' ? 'flex' : 'none';
+  if (view === 'map' && typeof renderMapTopbarShareControls === 'function') {
+    renderMapTopbarShareControls();
+  }
 
   const si = document.getElementById('save-indicator');
   if (si) si.classList.remove('show');
