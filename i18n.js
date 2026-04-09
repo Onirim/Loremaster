@@ -266,11 +266,15 @@ const TRANSLATIONS = {
     campaign_selection_count: '${n} élément(s) sélectionné(s)',
     campaign_sync_loading_title: 'Synchronisation…',
     campaign_sync_loading_body:  'Récupération des éléments de la campagne, veuillez patienter.',
+    campaign_type_map:       'Carte',
+    campaign_type_map_plural:'Couches de carte',
 
     // ── Partage ───────────────────────────────────────────────
     share_copy_btn:        'Copier',
     share_code_prompt:     'Code de partage à transmettre :',
     share_code_prompt_short:'Code de partage :',
+    transfer_type_map:       'Carte',
+    transfer_code_hint_map:  'Code de la couche de carte (8 car.)',
   },
 
   // ════════════════════════════════════════════════════════════
@@ -524,11 +528,15 @@ const TRANSLATIONS = {
     campaign_selection_count: '${n} item(s) selected',
     campaign_sync_loading_title: 'Syncing…',
     campaign_sync_loading_body:  'Fetching campaign items, please wait.',
+    campaign_type_map:       'Map',
+    campaign_type_map_plural:'Map layers', 
 
     // ── Share ─────────────────────────────────────────────────
     share_copy_btn:        'Copy',
     share_code_prompt:     'Share code to send:',
     share_code_prompt_short:'Share code:',
+    transfer_type_map:       'Map layer',
+    transfer_code_hint_map:  'Map layer code (8 chars)',
   },
 };
 
