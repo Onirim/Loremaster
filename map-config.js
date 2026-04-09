@@ -8,12 +8,12 @@ const MAP_CONFIG = {
   // ── Image de la carte ─────────────────────────────────────
   // Chemin relatif depuis la racine du site, ou URL absolue.
   // L'image doit être hébergée sur votre serveur (ou CDN).
-  image: './map.jpg',            // ← MODIFIEZ ICI
+  image: '/Camply/map.png',            // ← MODIFIEZ ICI
 
   // Dimensions natives de l'image source (en pixels)
   // Indispensable pour un positionnement précis des marqueurs.
-  imageWidth:  4096,             // ← MODIFIEZ ICI
-  imageHeight: 2816,             // ← MODIFIEZ ICI
+  imageWidth:  4095,             // ← MODIFIEZ ICI
+  imageHeight: 4095,             // ← MODIFIEZ ICI
 
   // ── Comportement du zoom ──────────────────────────────────
   zoomMin:  0.15,   // zoom minimum (vue éloignée)
