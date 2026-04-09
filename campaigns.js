@@ -721,16 +721,10 @@ function buildSelectableList(type) {
 function getCampaignMapSources() {
   const own = [];
   const followed = [];
-
-  if (typeof maps !== 'undefined') {
-    own.push(...Object.values(maps));
-  }
-  if (typeof followedMaps !== 'undefined') {
-    followed.push(...Object.values(followedMaps));
-  }
-
-  if (typeof mapOwnLayer !== 'undefined' && mapOwnLayer) {
-    own.push(mapOwnLayer);
+ 
+  // Multi-carte : mapOwnLayers est un dict { map_key: layer }
+  if (typeof mapOwnLayers !== 'undefined') {
+    own.push(...Object.values(mapOwnLayers).filter(Boolean));
   }
   if (typeof mapFollowedLayers !== 'undefined') {
     followed.push(
@@ -739,7 +733,7 @@ function getCampaignMapSources() {
         .filter(Boolean)
     );
   }
-
+ 
   return { own, followed };
 }
 
