@@ -52,6 +52,11 @@ Optional: Adapt for your game
         sql/10_transfer.sql
         sql/11_transfer_auto_follow.sql
         sql/12_transfer_fix_double
+        sql/13_sync_owner_tags.sql
+        sql/14_fix_doc_tags_unique_conflict.sql
+        sql/15_map_markers.sql
+        sql/16_map_sharing.sql
+        sql/17_multi_map.sql
    ```
     Configure Discord auth in Authentication > Providers
     Add the GitHub Pages URL in Authentication > URL Configuration
