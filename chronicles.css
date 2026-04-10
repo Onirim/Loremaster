@@ -305,6 +305,16 @@
   border-radius: 6px; padding: 14px; overflow-x: auto; margin-bottom: 16px;
 }
 .chr-reader-body pre code { background: none; padding: 0; }
+.chr-reader-body img {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  margin: 16px 0;
+}
+
 .chr-empty-preview { color: var(--text3); font-style: italic; }
 
 /* ── Mobile tabs ── */

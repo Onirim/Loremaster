@@ -51,7 +51,7 @@ async function loadRulebook() {
 
 function renderRulebook(markdown, contentEl, tocEl) {
   // ── 1. Parse le Markdown avec marked ─────────────────────────
-  const html = marked.parse(markdown);
+  const html = renderMarkdown(markdown);
 
   // ── 2. Inject dans un conteneur temporaire ────────────────────
   const tmp = document.createElement('div');

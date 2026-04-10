@@ -643,6 +643,30 @@ function esc(s) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+
+function normalizeMarkdownTypography(text) {
+  if (!text) return '';
+  return String(text).replace(/(^|[\s\(\[{"'])--(?=\s|$|[\)\]}",.!?:;])/g, '$1—');
+}
+
+function normalizeMarkdownTextarea(textarea) {
+  if (!textarea) return '';
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const normalized = normalizeMarkdownTypography(textarea.value);
+  if (normalized !== textarea.value) {
+    textarea.value = normalized;
+    const nextStart = Math.max(0, start - 1);
+    const nextEnd = Math.max(0, end - 1);
+    textarea.setSelectionRange(nextStart, nextEnd);
+  }
+  return textarea.value;
+}
+
+function renderMarkdown(md) {
+  return marked.parse(normalizeMarkdownTypography(md || ''));
+}
+
 function pipRow(val, cls, max) {
   return Array.from({ length: max }, (_, i) =>
     `<div class="pip ${i < val ? cls : 'empty'}"></div>`

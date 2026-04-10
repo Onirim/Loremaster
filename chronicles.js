@@ -527,12 +527,13 @@ function populateEntryEditor() {
 
 function updateEntryPreview() {
   entryState.title   = document.getElementById('entry-f-title').value;
-  entryState.content = document.getElementById('entry-f-content').value;
+  const contentEl = document.getElementById('entry-f-content');
+  entryState.content = normalizeMarkdownTextarea(contentEl);
   const preview = document.getElementById('entry-preview-content');
   const titleHtml = entryState.title
     ? `<h1 class="chr-reader-title">${esc(entryState.title)}</h1>` : '';
   const bodyHtml = entryState.content
-    ? marked.parse(entryState.content)
+    ? renderMarkdown(entryState.content)
     : `<p class="chr-empty-preview">${t('entry_preview_empty')}</p>`;
   preview.innerHTML = titleHtml + `<div class="chr-reader-body">${bodyHtml}</div>`;
 }
@@ -568,7 +569,7 @@ function openEntryReader(entryId) {
     </div>
     <h1 class="chr-reader-title">${esc(entry.title)}</h1>
     <div class="chr-reader-meta">${date}</div>
-    <div class="chr-reader-body">${entry.content ? marked.parse(entry.content) : ''}</div>
+    <div class="chr-reader-body">${entry.content ? renderMarkdown(entry.content) : ''}</div>
   `;
   showView('entry-reader');
   const chrShareCode = (chronicles[activeChrId] || followedChronicles[activeChrId])?.share_code;

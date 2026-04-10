@@ -389,7 +389,8 @@ function populateDocEditor() {
 
 function updateDocForm() {
   docState.title     = document.getElementById('doc-f-title').value;
-  docState.content   = document.getElementById('doc-f-content').value;
+  const contentEl = document.getElementById('doc-f-content');
+  docState.content   = normalizeMarkdownTextarea(contentEl);
   docState.is_public = document.getElementById('doc-f-public').checked;
   document.getElementById('doc-public-label').textContent =
     docState.is_public ? t('share_code_active_doc') : t('share_code_inactive_doc');
@@ -399,12 +400,13 @@ function updateDocForm() {
 
 function updateDocPreview() {
   docState.title   = document.getElementById('doc-f-title').value;
-  docState.content = document.getElementById('doc-f-content').value;
+  const contentEl = document.getElementById('doc-f-content');
+  docState.content = normalizeMarkdownTextarea(contentEl);
   const preview = document.getElementById('doc-preview-content');
   const titleHtml = docState.title
     ? `<h1 class="doc-reader-title">${esc(docState.title)}</h1>` : '';
   const bodyHtml = docState.content
-    ? marked.parse(docState.content)
+    ? renderMarkdown(docState.content)
     : `<p class="doc-empty-preview">${t('doc_preview_empty')}</p>`;
   preview.innerHTML = titleHtml + `<div class="doc-reader-body">${bodyHtml}</div>`;
 }
@@ -471,7 +473,7 @@ function openDocReader(id) {
 
   // ── Rendu du contenu Markdown dans un div temporaire ──
   const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = d.content ? marked.parse(d.content) : '';
+  tempDiv.innerHTML = d.content ? renderMarkdown(d.content) : '';
 
   // ── Collecte les H1 et H2 pour l'index ────────────────
   const headings = [];

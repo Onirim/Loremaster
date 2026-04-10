@@ -258,9 +258,15 @@
 
 /* Images inline Markdown */
 .doc-reader-body img {
-  max-width: 100%; border-radius: 6px;
-  border: 1px solid var(--border); margin: 16px 0;
-  cursor: zoom-in; transition: opacity 0.15s;
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  margin: 16px 0;
+  cursor: zoom-in;
+  transition: opacity 0.15s;
 }
 .doc-reader-body img:hover { opacity: 0.92; }
 
