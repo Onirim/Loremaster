@@ -125,7 +125,7 @@ async function switchMap(key) {
 
   // Efface l'image et les marqueurs actuels
   _closePopup();
-  _mapCanvas.querySelectorAll('.map-marker').forEach(el => el.remove());
+  _mapViewport.querySelectorAll('.map-marker').forEach(el => el.remove());
   const oldImg = _mapCanvas.querySelector('img.map-image');
   if (oldImg) oldImg.remove();
   const oldErr = _mapCanvas.querySelector('.map-image-error');
@@ -202,10 +202,7 @@ function _applyTransform() {
   if (!_mapCanvas) return;
   _mapCanvas.style.transform =
     `translate(${mapTransform.x}px, ${mapTransform.y}px) scale(${mapTransform.scale})`;
-  const inv = 1 / mapTransform.scale;
-  document.querySelectorAll('.map-marker').forEach(el => {
-    el.style.transform = `translate(-50%, -100%) scale(${inv})`;
-  });
+  _repositionRenderedMarkers();
 }
 
 function _updateZoomDisplay() {
@@ -526,8 +523,8 @@ async function unfollowMapLayer(layerId) {
 // ══════════════════════════════════════════════════════════════
 
 function _renderAllMarkers() {
-  if (!_mapCanvas) return;
-  _mapCanvas.querySelectorAll('.map-marker').forEach(el => el.remove());
+  if (!_mapCanvas || !_mapViewport) return;
+  _mapViewport.querySelectorAll('.map-marker').forEach(el => el.remove());
 
   // Couches suivies en dessous : seulement celles de la carte courante
   Object.values(mapFollowedLayers).forEach(({ layer, markers }) => {
@@ -543,17 +540,15 @@ function _renderAllMarkers() {
 }
 
 function _renderMarker(m, owned) {
-  if (!_mapCanvas || !_isMarkerOnCurrentMap(m)) return;
-  const { x: cx, y: cy } = _m2c(m.x, m.y);
+  if (!_mapViewport || !_isMarkerOnCurrentMap(m)) return;
   const size = MAP_CONFIG.markerSize;
-  const inv  = 1 / mapTransform.scale;
 
   const el = document.createElement('div');
   el.className = 'map-marker';
   el.id        = 'marker-' + m.id;
-  el.style.left      = cx + 'px';
-  el.style.top       = cy + 'px';
-  el.style.transform = `translate(-50%, -100%) scale(${inv})`;
+  el.dataset.rx = String(m.x);
+  el.dataset.ry = String(m.y);
+  _positionMarkerElement(el, m.x, m.y);
 
   const opacity  = '0.92';
 
@@ -573,7 +568,7 @@ function _renderMarker(m, owned) {
     _openPopup(m.id, owned);
   });
 
-  _mapCanvas.appendChild(el);
+  _mapViewport.appendChild(el);
 }
 
 function _refreshMarkerDOM(m) {
@@ -583,6 +578,27 @@ function _refreshMarkerDOM(m) {
   if (path) path.setAttribute('fill', m.color);
   const label = el.querySelector('.map-marker-label');
   if (label) label.textContent = m.name;
+  el.dataset.rx = String(m.x);
+  el.dataset.ry = String(m.y);
+  _positionMarkerElement(el, m.x, m.y);
+}
+
+function _positionMarkerElement(el, rx, ry) {
+  const cfg = _getCurrentMapConfig();
+  if (!cfg) return;
+  const vx = rx * cfg.imageWidth * mapTransform.scale + mapTransform.x;
+  const vy = ry * cfg.imageHeight * mapTransform.scale + mapTransform.y;
+  el.style.left = vx + 'px';
+  el.style.top  = vy + 'px';
+}
+
+function _repositionRenderedMarkers() {
+  if (!_mapViewport) return;
+  _mapViewport.querySelectorAll('.map-marker').forEach(el => {
+    const rx = parseFloat(el.dataset.rx);
+    const ry = parseFloat(el.dataset.ry);
+    if (Number.isFinite(rx) && Number.isFinite(ry)) _positionMarkerElement(el, rx, ry);
+  });
 }
 
 function _updateMarkerCount() {
@@ -668,7 +684,7 @@ function _repositionPopupOn(markerId, popup) {
   const pw = popup.offsetWidth || 240, ph = popup.offsetHeight || 120;
   const vw = _mapViewport.clientWidth, vh = _mapViewport.clientHeight;
   let left = vx - pw / 2;
-  let top  = vy - MAP_CONFIG.markerSize / mapTransform.scale * 1.4 - ph - 8;
+  let top  = vy - MAP_CONFIG.markerSize * 1.4 - ph - 8;
   if (left < 8)       left = 8;
   if (left + pw > vw) left = vw - pw - 8;
   if (top  < 8)       top  = vy + MAP_CONFIG.markerSize + 8;
