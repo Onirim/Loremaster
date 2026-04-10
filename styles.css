@@ -84,13 +84,20 @@ html, body {
 @media (max-width: 768px) {
   #topbar {
     grid-template-columns: 1fr auto;
-    grid-template-rows: 44px 36px;
+    grid-template-rows: 44px auto;
     padding: 0; gap: 0;
     position: sticky; top: 0;
   }
   #topbar .logo         { grid-column: 1; grid-row: 1; padding-left: 12px; }
   #topbar .topbar-right { grid-column: 2; grid-row: 1; padding-right: 12px; gap: 6px; }
-  #topbar nav           { grid-column: 1 / -1; grid-row: 2; border-top: 1px solid var(--border); padding: 0 4px; }
+  #topbar nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-top: 1px solid var(--border);
+    padding: 4px;
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
 }
 
 #topbar .logo {
