@@ -16,10 +16,10 @@ const MAP_CONFIG = {
   maps: [
     {
       key:         'default',              // ← identifiant unique, ne pas changer si données existantes
-      name:        'Carte principale',     // ← nom affiché dans le sélecteur
-      image:       '/Camply/pictures/map.png',
-      imageWidth:  4095,
-      imageHeight: 4095,
+      name:        'Galaxy Map',     // ← nom affiché dans le sélecteur
+      image:       '/Camply/pictures/galaxy-regions-pretty.png',
+      imageWidth:  4500,
+      imageHeight: 4500,
     },
     // Décommentez et remplissez pour ajouter d'autres cartes :
     {
