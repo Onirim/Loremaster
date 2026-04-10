@@ -7,9 +7,11 @@ Stack: Vanilla HTML/CSS/JS + Supabase + GitHub Pages.
 What the template manages (do not modify)
 
 - Discord Auth via Supabase
+- Characters (with optionnal stat system)
 - Chronicles (campaign stories with Markdown entries)
 - Documents (shareable Markdown documents)
-- Campaigns (collections grouping characters + chronicles + documents)
+- Maps (with pins)
+- Campaigns (collections grouping characters + chronicles + documents + maps)
 - Sharing system via 8-character code
 - Subscription to other player's content
 - Ownership transfers of objects
@@ -69,11 +71,7 @@ const SUPABASE_KEY = 'sb_publishable_XXXX';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 ```
 
-5. **Adapt game-system.js and editor.js (optional)**
-
-These are the only two files truly specific to the game. See the section below.
-
-6. **Update the branding**
+5. **Update the branding**
 
 In index.html:
 ```
@@ -87,20 +85,6 @@ In site.webmanifest:
   "start_url": "/my-repo/"
 }
 ```
-In sw.js, change the cache name:
-```
-const CACHE_NAME = 'my-game-v1';
-```
-And update PRECACHE_ASSETS with the correct path /my-repo/.
 
-## Adapt game-system.js:
-Mandatory functions to implement
-| Function |  Constant Role |
-| --- | --- |
-| GAME_NAME |	Name displayed in the logo |
-| GAME_SUBTITLE	| Subtitle under the logo |
-| freshState()	| Returns an empty character |
-| renderCharCardBody(c)	| HTML of the card in the roster |
-| renderCharSheet(data)	| Complete sheet HTML (preview + shared view) |
-| GAME_I18N	| FR/EN translations specific to the game |
-
+6. **Set a campaign map** (optional)
+    Edit map-config.js and add your maps if you want to use them in the application. 
