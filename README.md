@@ -39,8 +39,11 @@ Optional: Adapt for your game
 
 3. **Create a Supabase project (can be a free project)**
 
-    In Supabase SQL Editor, execute in this order:
+    In Supabase SQL Editor:
    ```
+        For a fresh install: run only sql/00_fresh_install.sql
+
+        For an existing database upgrade: run migration files one by one, in order:
         sql/00_schema.sql
         sql/01_tags.sql
         sql/02_followed.sql
@@ -49,11 +52,11 @@ Optional: Adapt for your game
         sql/05_document_tags.sql
         sql/06_storage.sql
         sql/07_migration_campaigns.sql
-        sql/08_fix_profiles-v2.sql
+        sql/08_fix-profiles-v2.sql
         sql/09_character_tag.sql
         sql/10_transfer.sql
         sql/11_transfer_auto_follow.sql
-        sql/12_transfer_fix_double
+        sql/12_transfer_fix_double.sql
         sql/13_sync_owner_tags.sql
         sql/14_fix_doc_tags_unique_conflict.sql
         sql/15_map_markers.sql
