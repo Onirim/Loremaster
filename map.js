@@ -95,7 +95,7 @@ function _buildMapSelector() {
 
   const lbl = document.createElement('span');
   lbl.className = 'map-selector-label';
-  lbl.textContent = MAP_CONFIG.labels.mapSelectorLabel || 'Carte';
+  lbl.textContent = t('map_selector_label');
   wrap.appendChild(lbl);
 
   const sel = document.createElement('select');
@@ -161,7 +161,7 @@ function _buildMapImage() {
 
   const img = document.createElement('img');
   img.id = 'map-image'; img.className = 'map-image';
-  img.alt = cfg.name || 'Carte'; img.draggable = false;
+  img.alt = cfg.name || t('map_selector_label'); img.draggable = false;
   img.onload = () => {
     _mapImage = img;
     _setInitialTransform();
@@ -172,7 +172,7 @@ function _buildMapImage() {
     const err = document.createElement('div');
     err.className = 'map-image-error';
     err.innerHTML = `<div class="icon">🗺️</div>
-      <strong>${MAP_CONFIG.labels.imageError}</strong>
+      <strong>${t('map_image_error')}</strong>
       <code>${cfg.image}</code>`;
     _mapCanvas.appendChild(err);
   };
@@ -355,31 +355,31 @@ async function _saveMarkerToDB(payload, ctx) {
     const { data, error } = await sb.from('map_markers')
       .insert({ ...payload, user_id: currentUser.id, map_key: currentMapKey })
       .select('id, x, y, name, description, color, map_key').single();
-    if (error) { showToast(MAP_CONFIG.labels.toastError); return; }
+    if (error) { showToast(t('map_toast_error')); return; }
     mapMarkers[data.id] = data;
     _renderMarker(data, true);
     _updateMarkerCount();
-    showToast(MAP_CONFIG.labels.toastAdded);
+    showToast(t('map_toast_added'));
   } else {
     const { data, error } = await sb.from('map_markers')
       .update(payload).eq('id', ctx.id)
       .select('id, x, y, name, description, color, map_key').single();
-    if (error) { showToast(MAP_CONFIG.labels.toastError); return; }
+    if (error) { showToast(t('map_toast_error')); return; }
     mapMarkers[data.id] = data;
     _refreshMarkerDOM(data);
-    showToast(MAP_CONFIG.labels.toastSaved);
+    showToast(t('map_toast_saved'));
   }
 }
 
 async function deleteMapMarker(id) {
-  if (!confirm(MAP_CONFIG.labels.confirmDelete)) return;
+  if (!confirm(t('map_confirm_delete_marker'))) return;
   const { error } = await sb.from('map_markers').delete().eq('id', id);
-  if (error) { showToast(MAP_CONFIG.labels.toastError); return; }
+  if (error) { showToast(t('map_toast_error')); return; }
   delete mapMarkers[id];
   document.getElementById('marker-' + id)?.remove();
   _updateMarkerCount();
   _closePopup();
-  showToast(MAP_CONFIG.labels.toastDeleted);
+  showToast(t('map_toast_deleted'));
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -407,17 +407,17 @@ async function saveOwnLayerToDB() {
     const { data, error } = await sb.from('map_layers')
       .update(payload).eq('id', layer.id)
       .select('id, title, description, is_public, share_code, map_key').single();
-    if (error) { showToast(MAP_CONFIG.labels.toastError); return; }
+    if (error) { showToast(t('map_toast_error')); return; }
     mapOwnLayers[data.map_key] = data;
   } else {
     const { data, error } = await sb.from('map_layers')
       .insert({ ...payload, user_id: currentUser.id, map_key: currentMapKey })
       .select('id, title, description, is_public, share_code, map_key').single();
-    if (error) { showToast(MAP_CONFIG.labels.toastError); return; }
+    if (error) { showToast(t('map_toast_error')); return; }
     mapOwnLayers[data.map_key] = data;
   }
   _renderLayerPanel();
-  showToast(MAP_CONFIG.labels.toastSaved);
+  showToast(t('map_toast_saved'));
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -477,12 +477,12 @@ async function followMapLayerByCode(code) {
   const { data, error } = await sb.from('map_layers')
     .select('id, title, user_id, is_public, map_key')
     .eq('share_code', clean).eq('is_public', true).single();
-  if (error || !data) { showToast(MAP_CONFIG.labels.toastLayerNotFound); return; }
-  if (data.user_id === currentUser.id) { showToast(MAP_CONFIG.labels.toastLayerOwn); return; }
-  if (mapFollowedIds.includes(data.id)) { showToast(MAP_CONFIG.labels.toastLayerAlreadyFollowed); return; }
+  if (error || !data) { showToast(t('map_toast_layer_not_found')); return; }
+  if (data.user_id === currentUser.id) { showToast(t('map_toast_layer_own')); return; }
+  if (mapFollowedIds.includes(data.id)) { showToast(t('map_toast_layer_already_followed')); return; }
 
   const followRes = await _ensureFollowedLayerRow(data.id);
-  if (!followRes.ok) { showToast(MAP_CONFIG.labels.toastError); return; }
+  if (!followRes.ok) { showToast(t('map_toast_error')); return; }
 
   if (!mapFollowedIds.includes(data.id)) mapFollowedIds.push(data.id);
   await loadFollowedLayersFromDB();
@@ -496,7 +496,7 @@ async function followMapLayerByCode(code) {
 
   _renderLayerPanel();
   document.getElementById('map-follow-input').value = '';
-  const msg = MAP_CONFIG.labels.toastLayerSubscribed.replace('${title}', data.title || clean);
+  const msg = ti('map_toast_layer_subscribed', { title: data.title || clean });
   showToast(msg);
 }
 
@@ -505,7 +505,10 @@ async function unfollowMapLayer(layerId) {
   if (layer?.share_code && typeof getFollowedCampaignTitlesByItem === 'function') {
     const blocking = await getFollowedCampaignTitlesByItem('map', layer.share_code);
     if (blocking.length) {
-      showToast(`Impossible : cette couche fait partie de la (des) campagne(s) : ${blocking.join(', ')}.`);
+      showToast(ti('toast_unfollow_blocked_by_campaigns', {
+        type: t('campaign_type_map'),
+        campaigns: blocking.join(', '),
+      }));
       return;
     }
   }
@@ -515,7 +518,7 @@ async function unfollowMapLayer(layerId) {
   delete mapFollowedLayers[layerId];
   _renderAllMarkers();
   _renderLayerPanel();
-  showToast(MAP_CONFIG.labels.toastLayerUnsubscribed);
+  showToast(t('map_toast_layer_unsubscribed'));
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -610,7 +613,7 @@ function _updateMarkerCount() {
     .reduce((acc, { markers }) =>
       acc + Object.values(markers).filter(m => _isMarkerOnCurrentMap(m)).length, 0);
   const total = own + followed;
-  el.innerHTML = `<span>${total}</span> marqueur${total !== 1 ? 's' : ''}`;
+  el.innerHTML = ti(total === 1 ? 'map_marker_count_one' : 'map_marker_count_many', { n: total });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -640,14 +643,14 @@ function _openPopup(markerId, owned) {
       <button class="map-popup-close" onclick="_closePopup()">✕</button>
     </div>
     ${m.description ? `<div class="map-popup-desc">${esc(m.description)}</div>` : ''}
-    ${ownerName ? `<div class="map-popup-owner">par ${esc(ownerName)}</div>` : ''}
+    ${ownerName ? `<div class="map-popup-owner">${t('followed_owner_prefix')}${esc(ownerName)}</div>` : ''}
     ${owned ? `
     <div class="map-popup-actions">
       <button class="map-popup-edit-btn"
         onclick="openMapMarkerModal('edit',null,null,'${markerId}')">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
           width="11" height="11"><path d="M11 2l3 3-9 9H2v-3z"/></svg>
-        Modifier
+        ${t('btn_edit')}
       </button>
       <button class="map-popup-delete-btn" onclick="deleteMapMarker('${markerId}')">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -656,7 +659,7 @@ function _openPopup(markerId, owned) {
           <path d="M5 4V2h6v2M6 7v5M10 7v5"/>
           <path d="M4 4l1 10h6l1-10"/>
         </svg>
-        ${MAP_CONFIG.labels.btnDelete}
+        ${t('btn_delete')}
       </button>
     </div>` : ''}`;
 
@@ -707,7 +710,7 @@ function openMapMarkerModal(mode, rx, ry, markerId) {
   mapModalColor = m?.color || MAP_CONFIG.markerColors[0];
 
   document.getElementById('map-modal-title-text').textContent =
-    mode === 'add' ? MAP_CONFIG.labels.markerModalTitle : MAP_CONFIG.labels.editModalTitle;
+    mode === 'add' ? t('map_modal_new_marker') : t('map_modal_edit_marker');
   document.getElementById('map-modal-name').value = m?.name        || '';
   document.getElementById('map-modal-desc').value = m?.description || '';
 
@@ -780,7 +783,7 @@ function _renderLayerPanel() {
           <rect x="5" y="5" width="8" height="8" rx="1"/>
           <path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1"/>
         </svg>
-        Copier
+        ${t('share_copy_btn')}
       </button>
     </div>` : '';
 
@@ -794,10 +797,10 @@ function _renderLayerPanel() {
           <div class="map-followed-dot"></div>
           <div class="map-followed-info">
             <div class="map-followed-title">${esc(l.title || l.share_code)}</div>
-            <div class="map-followed-owner">par ${esc(l._owner_name)}</div>
+            <div class="map-followed-owner">${t('followed_owner_prefix')}${esc(l._owner_name)}</div>
           </div>
           <button class="icon-btn danger" onclick="unfollowMapLayer('${l.id}')"
-            title="Se désabonner">
+            title="${t('btn_unsubscribe')}">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
               <polyline points="3,4 13,4"/>
               <path d="M5 4V2h6v2M6 7v5M10 7v5"/>
@@ -805,56 +808,56 @@ function _renderLayerPanel() {
             </svg>
           </button>
         </div>`).join('')
-    : `<div class="map-followed-empty">Aucune couche suivie pour cette carte.</div>`;
+    : `<div class="map-followed-empty">${t('map_followed_empty')}</div>`;
 
   panel.innerHTML = `
     <div class="map-panel-inner">
 
       <div class="map-panel-section">
         <div class="map-panel-title">
-          Ma couche
+          ${t('map_own_layer')}
           ${cfg ? `<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text3)"> — ${esc(cfg.name)}</span>` : ''}
         </div>
         <div class="map-panel-field">
-          <label>Titre</label>
+          <label>${t('map_field_title')}</label>
           <input type="text" id="map-layer-title"
             value="${esc(layer?.title || '')}"
-            placeholder="Ex : Carte de Théodric">
+            placeholder="${t('map_layer_title_ph')}">
         </div>
         <div class="map-panel-field">
-          <label>Description</label>
+          <label>${t('map_field_desc')}</label>
           <textarea id="map-layer-desc"
-            placeholder="Notes pour les joueurs…">${esc(layer?.description || '')}</textarea>
+            placeholder="${t('map_layer_desc_ph')}">${esc(layer?.description || '')}</textarea>
         </div>
         <div class="map-panel-public-row">
-          <label>Partage public</label>
+          <label>${t('editor_field_public')}</label>
           <label class="map-panel-toggle">
             <input type="checkbox" id="map-layer-public"
               ${isPublic ? 'checked' : ''}
               onchange="_onLayerPublicChange(this.checked)">
-            <span id="map-layer-public-label">${isPublic ? 'Public (code actif)' : 'Privé'}</span>
+            <span id="map-layer-public-label">${isPublic ? t('map_public_active') : t('map_public_private')}</span>
           </label>
         </div>
         ${shareCodeHtml}
         <button class="map-panel-save-btn" onclick="saveOwnLayerToDB()">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"
             width="12" height="12"><polyline points="2,8 6,12 14,4"/></svg>
-          Enregistrer
+          ${t('btn_save')}
         </button>
       </div>
 
       <div class="map-panel-section">
-        <div class="map-panel-title">Couches suivies
+        <div class="map-panel-title">${t('map_followed_layers')}
           ${cfg ? `<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text3)"> — ${esc(cfg.name)}</span>` : ''}
         </div>
         <div class="map-follow-input-wrap">
           <input type="text" id="map-follow-input"
-            placeholder="Code de partage (8 car.)"
+            placeholder="${t('map_follow_code_ph')}"
             maxlength="8"
             oninput="this.value=this.value.toUpperCase()"
             onkeydown="if(event.key==='Enter') followMapLayerByCode(this.value)">
           <button onclick="followMapLayerByCode(document.getElementById('map-follow-input').value)">
-            + Suivre
+            ${t('btn_follow_map')}
           </button>
         </div>
         <div class="map-followed-list">${followedHtml}</div>
@@ -865,13 +868,13 @@ function _renderLayerPanel() {
 
 function _onLayerPublicChange(checked) {
   const label = document.getElementById('map-layer-public-label');
-  if (label) label.textContent = checked ? 'Public (code actif)' : 'Privé';
+  if (label) label.textContent = checked ? t('map_public_active') : t('map_public_private');
 }
 
 function _copyMapShareCode(code) {
   navigator.clipboard.writeText(code)
-    .then(() => showToast(`Code "${code}" copié !`))
-    .catch(() => prompt('Code de partage :', code));
+    .then(() => showToast(ti('toast_code_copied', { code })))
+    .catch(() => prompt(t('share_code_prompt_short'), code));
 }
 
 function toggleMapPanel() {

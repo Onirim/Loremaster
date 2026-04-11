@@ -973,9 +973,12 @@
       <div class="map-toolbar">
         <!-- Contrôles de zoom -->
         <div class="map-zoom-group">
-          <button class="map-zoom-btn" onclick="mapZoomOut()" title="Zoom −">−</button>
-          <div class="map-zoom-value" id="map-zoom-value" onclick="mapZoomReset()" title="Réinitialiser la vue">100%</div>
-          <button class="map-zoom-btn" onclick="mapZoomIn()" title="Zoom +">+</button>
+          <button class="map-zoom-btn" onclick="mapZoomOut()" title="Zoom −"
+            data-i18n="map_zoom_out_title" data-i18n-attr="title">−</button>
+          <div class="map-zoom-value" id="map-zoom-value" onclick="mapZoomReset()" title="Réinitialiser la vue"
+            data-i18n="map_zoom_reset_title" data-i18n-attr="title">100%</div>
+          <button class="map-zoom-btn" onclick="mapZoomIn()" title="Zoom +"
+            data-i18n="map_zoom_in_title" data-i18n-attr="title">+</button>
         </div>
      
         <!-- Bouton reset vue -->
@@ -985,13 +988,11 @@
             <path d="M1 8a7 7 0 1 0 7-7"/>
             <polyline points="1,2 1,8 7,8"/>
           </svg>
-          Vue initiale
+          <span data-i18n="map_initial_view">Vue initiale</span>
         </button>
      
         <!-- Hint clavier -->
-        <div class="map-hint">
-          <kbd>Maj</kbd> + clic gauche pour ajouter un marqueur
-        </div>
+        <div class="map-hint" data-i18n="map_add_marker_hint"><kbd>Maj</kbd> + clic gauche pour ajouter un marqueur</div>
 
       <button class="map-panel-btn" id="map-panel-btn" onclick="toggleMapPanel()">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -999,13 +1000,11 @@
         <circle cx="12" cy="3" r="1.5"/><circle cx="4" cy="8" r="1.5"/><circle cx="12" cy="13" r="1.5"/>
         <line x1="5.5" y1="7" x2="10.5" y2="4.3"/><line x1="5.5" y1="9" x2="10.5" y2="11.7"/>
         </svg>
-        Partage
+        <span data-i18n="map_share_panel_btn">Partage</span>
       </button>
      
         <!-- Compteur -->
-        <div class="map-marker-count" id="map-marker-count">
-          <span>0</span> marqueur
-        </div>
+        <div class="map-marker-count" id="map-marker-count"><span>0</span> marqueur</div>
       </div>
      
       <!-- Zone de carte -->
@@ -1026,7 +1025,7 @@
               <path d="M8 1C5.24 1 3 3.24 3 6c0 4.17 5 9 5 9s5-4.83 5-9c0-2.76-2.24-5-5-5z"/>
               <circle cx="8" cy="6" r="2"/>
             </svg>
-            <span id="map-modal-title-text">Nouveau marqueur</span>
+            <span id="map-modal-title-text" data-i18n="map_modal_new_marker">Nouveau marqueur</span>
           </div>
           <button class="map-modal-close" onclick="closeMapMarkerModal()">✕</button>
         </div>
@@ -1034,8 +1033,9 @@
         <div class="map-modal-body">
           <!-- Nom -->
           <div class="map-modal-field">
-            <label>Nom</label>
+            <label data-i18n="map_modal_field_name">Nom</label>
             <input type="text" id="map-modal-name"
+              data-i18n="map_modal_name_ph" data-i18n-attr="placeholder"
               placeholder="Ex : Taverne du Dragon d'Or"
               maxlength="80"
               autocomplete="off">
@@ -1043,27 +1043,28 @@
      
           <!-- Description -->
           <div class="map-modal-field">
-            <label>Description</label>
+            <label data-i18n="map_modal_field_desc">Description</label>
             <textarea id="map-modal-desc"
+              data-i18n="map_modal_desc_ph" data-i18n-attr="placeholder"
               placeholder="Notes, description du lieu…"
               maxlength="1000"></textarea>
           </div>
      
           <!-- Couleur -->
           <div class="map-modal-field">
-            <label>Couleur</label>
+            <label data-i18n="map_modal_field_color">Couleur</label>
             <div class="map-color-swatches" id="map-modal-swatches"></div>
           </div>
         </div>
      
         <div class="map-modal-footer">
-          <button class="btn-cancel" onclick="closeMapMarkerModal()">Annuler</button>
+          <button class="btn-cancel" onclick="closeMapMarkerModal()" data-i18n="btn_cancel">Annuler</button>
           <button class="map-modal-save-btn" onclick="submitMapMarkerModal()">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"
               width="12" height="12">
               <polyline points="2,8 6,12 14,4"/>
             </svg>
-            Enregistrer
+            <span data-i18n="btn_save">Enregistrer</span>
           </button>
         </div>
       </div>
