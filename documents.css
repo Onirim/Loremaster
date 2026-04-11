@@ -260,11 +260,11 @@
 .doc-reader-body img {
   display: block;
   max-width: 100%;
-  width: 100%;
+  width: auto;
   height: auto;
   border-radius: 6px;
   border: 1px solid var(--border);
-  margin: 16px 0;
+  margin: 16px auto;
   cursor: zoom-in;
   transition: opacity 0.15s;
 }
