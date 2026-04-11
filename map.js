@@ -454,6 +454,14 @@ async function loadFollowedLayersFromDB() {
   }
 }
 
+/** Précharge les couches carte (propres + suivies) même hors vue Carte. */
+async function ensureMapLayersCacheLoaded() {
+  await Promise.all([
+    loadAllOwnLayersFromDB(),
+    loadFollowedLayersFromDB(),
+  ]);
+}
+
 async function _ensureFollowedLayerRow(layerId) {
   const { data: existing, error: checkError } = await sb.from('followed_map_layers')
     .select('layer_id')
