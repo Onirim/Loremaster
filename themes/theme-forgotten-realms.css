@@ -1006,8 +1006,8 @@ a:hover { color: #e0b050; }
 .doc-reader-body tr:last-child td { border-bottom: none; }
 .doc-reader-body tbody tr:hover td { background: rgba(56,96,192,0.04); }
 .doc-reader-body img {
-  display: block; max-width: 100%; width: 100%; height: auto;
-  border-radius: 0; border: 1px solid var(--border); margin: 16px 0;
+  display: block; max-width: 100%; height: auto;
+  border-radius: 0; border: 1px solid var(--border); 
 }
 
 /* Éditeur document */
