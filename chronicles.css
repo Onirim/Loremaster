@@ -308,11 +308,11 @@
 .chr-reader-body img {
   display: block;
   max-width: 100%;
-  width: 100%;
+  width: auto;
   height: auto;
   border-radius: 6px;
   border: 1px solid var(--border);
-  margin: 16px 0;
+  margin: 16px auto;
 }
 
 .chr-empty-preview { color: var(--text3); font-style: italic; }
