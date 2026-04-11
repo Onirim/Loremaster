@@ -211,6 +211,12 @@ html, body {
 .empty-state h2    { font-size: 20px; font-weight: 600; color: var(--text2); }
 .empty-state p     { font-size: 13px; text-align: center; max-width: 300px; line-height: 1.7; }
 
+.card-desc {
+    font-size: 13px;
+    color: var(--text3);
+    line-height: 1.6;
+}
+
 /* ══════════════════ EDITOR VIEW ══════════════════ */
 #view-editor { display: none; flex: 1; overflow: hidden; }
 #view-editor.active { display: flex; }
