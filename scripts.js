@@ -391,6 +391,7 @@ function showView(view) {
   if (view === 'map') { clearHash(); initMap(); }
   if (view === 'rulebook') { clearHash(); loadRulebook(); }
   applyTranslations();
+  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
 }
 
 // ══════════════════════════════════════════════════════════════
