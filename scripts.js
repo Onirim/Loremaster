@@ -309,6 +309,7 @@ async function onSignedIn(user) {
       ? ensureMapLayersCacheLoaded()
       : Promise.resolve()),
   ]);
+  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
   document.getElementById('loading-overlay').classList.remove('active');
   isAppReady = true;
   if (!navigateFromHash()) {
@@ -410,13 +411,13 @@ function renderList() {
   const grid  = document.getElementById('char-grid');
   const empty = document.getElementById('empty-state');
   const allKeys = [...keys, ...followedKeys];
+  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
   if (!allKeys.length) { grid.innerHTML = ''; empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
   grid.innerHTML = [
     ...keys.map(id         => cardHTML(id, chars[id], false)),
     ...followedKeys.map(id => cardHTML(id, followedChars[id], true)),
   ].join('');
-  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
 }
 
 function cardHTML(id, c, isFollowed = false) {
@@ -510,7 +511,8 @@ function showSharedChar(data) {
     ${renderCharSheet(data)}
   `;
   showView('shared');
-  if (data?.id) unreadMarkers.markCharacterRead(data.id);
+  const characterId = data?.id || data?._db_id;
+  if (characterId) unreadMarkers.markCharacterRead(characterId);
   unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
   currentSharedCharCode = data.share_code || null;
   if (data.share_code) setHash('char', data.share_code);

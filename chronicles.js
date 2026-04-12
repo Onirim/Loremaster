@@ -271,13 +271,13 @@ function renderChroniclesList() {
 
   document.getElementById('chr-count-badge').textContent = total ? `(${total})` : '';
 
+  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
   if (!total) { grid.innerHTML = ''; empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
   grid.innerHTML = [
     ...ownKeys.map(id    => chrCardHTML(id, chronicles[id], false)),
     ...followedKeys.map(id => chrCardHTML(id, followedChronicles[id], true)),
   ].join('');
-  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
 }
 
 function chrEntryCountLabel(n) {

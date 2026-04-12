@@ -240,13 +240,13 @@ function renderDocumentsList() {
   const total = Object.keys(documents).length + Object.keys(followedDocuments).length;
   document.getElementById('doc-count-badge').textContent = total ? `(${total})` : '';
   const allKeys = [...ownKeys, ...followedKeys];
+  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
   if (!allKeys.length) { grid.innerHTML = ''; empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
   grid.innerHTML = [
     ...ownKeys.map(id    => docCardHTML(id, documents[id], false)),
     ...followedKeys.map(id => docCardHTML(id, followedDocuments[id], true)),
   ].join('');
-  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
 }
 
 function renderDocFilters() {
