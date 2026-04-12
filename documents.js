@@ -246,6 +246,7 @@ function renderDocumentsList() {
     ...ownKeys.map(id    => docCardHTML(id, documents[id], false)),
     ...followedKeys.map(id => docCardHTML(id, followedDocuments[id], true)),
   ].join('');
+  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
 }
 
 function renderDocFilters() {
@@ -297,11 +298,12 @@ function docCardHTML(id, d, isFollowed) {
     : '';
 
   if (isFollowed) {
+    const unreadDot = unreadMarkers.cardDotHTML(unreadMarkers.isDocumentUnread(id, false));
     const cardTags = (followedDocTagMap[id]||[]).map(tid => {
       const tg = allDocTags.find(x => x.id === tid);
       return tg ? `<span class="tag-chip" style="background:${tg.color}22;color:${tg.color};border:1px solid ${tg.color}44">${esc(tg.name)}</span>` : '';
     }).join('');
-    return `<div class="doc-card" onclick="openDocReader('${id}')">
+    return `<div class="doc-card" onclick="openDocReader('${id}')">${unreadDot}
       ${d.illustration_url ? `<img class="card-illus" src="${esc(d.illustration_url)}" style="object-position:center ${d.illustration_position||0}%" onclick="event.stopPropagation();openLightbox('${esc(d.illustration_url)}')" alt="">` : ''}
       <div class="doc-card-actions">
         <button class="icon-btn" onclick="event.stopPropagation();editFollowedDocTags('${id}')" title="${t('card_manage_tags')}">
@@ -470,6 +472,7 @@ function openDocReader(id) {
   const d = followedDocuments[id] || documents[id];
   if (!d) return;
   const isOwn = !!documents[id];
+  if (!isOwn) unreadMarkers.markDocumentRead(id);
 
   // ── Rendu du contenu Markdown dans un div temporaire ──
   const tempDiv = document.createElement('div');
@@ -551,6 +554,7 @@ function openDocReader(id) {
     : `<div id="doc-reader-content">${contentHtml}</div>`;
 
   showView('doc-reader');
+  unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
   if (d.share_code) setHash('doc', d.share_code);
 
   // ── Scroll spy ────────────────────────────────────────
