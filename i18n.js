@@ -314,6 +314,11 @@ const TRANSLATIONS = {
     map_toast_layer_already_followed:'Vous suivez déjà cette couche.',
     map_toast_layer_unsubscribed:   'Abonnement à la couche supprimé.',
     map_toast_layer_subscribed:     'Abonné à "${title}" !',
+    user_export_visible:            'Exporter mes données visibles',
+    export_in_progress:             'Export en cours…',
+    export_done:                    'Export prêt !',
+    export_error:                   'Échec de l’export',
+    export_error_zip_lib:           'Bibliothèque ZIP indisponible.',
   },
 
   // ════════════════════════════════════════════════════════════
@@ -615,6 +620,11 @@ const TRANSLATIONS = {
     map_toast_layer_already_followed:'You are already following this layer.',
     map_toast_layer_unsubscribed:   'Layer subscription removed.',
     map_toast_layer_subscribed:     'Subscribed to "${title}"!',
+    user_export_visible:            'Export visible data',
+    export_in_progress:             'Export in progress…',
+    export_done:                    'Export ready!',
+    export_error:                   'Export failed',
+    export_error_zip_lib:           'ZIP library unavailable.',
   },
 };
 
