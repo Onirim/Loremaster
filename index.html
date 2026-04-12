@@ -181,6 +181,14 @@
             </svg>
             <span data-i18n="user_transfer">Transférer un élément</span>
           </button>
+          <button class="user-dropdown-item" onclick="exportVisibleData()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M8 2v8"/>
+              <path d="M5.5 7.5 8 10l2.5-2.5"/>
+              <path d="M2.5 11.5v1h11v-1"/>
+            </svg>
+            <span data-i18n="user_export_visible">Exporter mes données visibles</span>
+          </button>
           <button class="user-dropdown-item danger" onclick="doLogout()">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M6 3H3v10h3M10 5l3 3-3 3M13 8H6"/>
@@ -1138,6 +1146,7 @@
 
 <script src="i18n.js"></script>
 <script src="supabase-client.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="game-system.js"></script>
 <script src="unread-markers.js"></script>
 <script src="chronicles.js"></script>
@@ -1149,6 +1158,7 @@
 <script src="transfert.js"></script>
 <script src="map-config.js"></script>
 <script src="map.js"></script>
+<script src="export.js"></script>
 <script src="scripts.js"></script>
   <div id="transfer-modal">
   <div id="transfer-modal-panel"></div>
