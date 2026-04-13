@@ -500,6 +500,8 @@ function _trashIcon() {
 let currentSharedCharCode = null;
 
 function showSharedChar(data) {
+  const sharedCharacterId = data?._db_id || null;
+  if (sharedCharacterId) unreadMarkers.markCharacterRead(sharedCharacterId);
   document.getElementById('shared-content').innerHTML = `
     <div class="shared-banner">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -513,7 +515,6 @@ function showSharedChar(data) {
   `;
   showView('shared');
   const characterId = data?.id || data?._db_id;
-  if (characterId) unreadMarkers.markCharacterRead(characterId);
   unreadMarkers.refreshNavBadges({ followedChars, followedDocuments, followedChronicles, chrEntries });
   currentSharedCharCode = data.share_code || null;
   if (data.share_code) setHash('char', data.share_code);
