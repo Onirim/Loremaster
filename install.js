@@ -31,6 +31,17 @@ const installAssistant = (() => {
   }
 
   async function checkSupabaseConnectivity() {
+    const isPlaceholder = (value) => {
+      if (!value || typeof value !== 'string') return true;
+      const trimmed = value.trim();
+      if (!trimmed) return true;
+      return trimmed.includes('XXXXXXXX') || trimmed.includes('YOUR_') || trimmed.includes('example');
+    };
+
+    if (isPlaceholder(SUPABASE_URL) || isPlaceholder(SUPABASE_KEY)) {
+      return { ok: false, reason: 'connection_config' };
+    }
+
     try {
       const { error } = await sb.from('profiles').select('id').limit(1);
       if (!error) return { ok: true };
@@ -118,11 +129,7 @@ const installAssistant = (() => {
       results.afterInstall = results.autoInstall.ok ? await checkSupabaseConnectivity() : results.supabaseCheck;
     }
 
-    // L'auth Discord est toujours vérifiée, même si un autre test échoue,
-    // afin de garantir un diagnostic stable avant d'afficher l'erreur prioritaire.
-    results.discordCheck = await checkDiscordProvider();
-
-    if (!results.supabaseCheck.ok && results.supabaseCheck.reason === 'connection') {
+    if (!results.supabaseCheck.ok && ['connection', 'connection_config'].includes(results.supabaseCheck.reason)) {
       state.ok = false;
       state.details = { stage: 'supabase_connection', ...results };
       setStatus('Supabase login required', 'Camply cannot connect to Supabase.', 'Action required');
@@ -131,6 +138,9 @@ const installAssistant = (() => {
       state.running = false;
       return false;
     }
+
+    // L'auth Discord est vérifiée uniquement si la connexion Supabase est fonctionnelle.
+    results.discordCheck = await checkDiscordProvider();
 
     if (!results.supabaseCheck.ok && results.supabaseCheck.reason === 'missing_schema' && !results.afterInstall?.ok) {
       state.ok = false;
