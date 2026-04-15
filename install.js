@@ -12,7 +12,7 @@ const installAssistant = (() => {
     return document.getElementById(id);
   }
 
-  function setStatus(title, subtitle, badgeText = 'Vérification…') {
+  function setStatus(title, subtitle, badgeText = 'Checking…') {
     getEl('install-title').textContent = title;
     getEl('install-subtitle').textContent = subtitle;
     getEl('install-status-badge').textContent = badgeText;
@@ -103,29 +103,29 @@ const installAssistant = (() => {
     showInstallScreen();
     getEl('install-retry-btn').disabled = true;
     getEl('install-open-sql-btn').style.display = 'none';
-    setStatus('Assistant d\'installation', 'On vérifie la configuration de Supabase et Discord…', 'Vérification');
-    await renderMarkdown(`${mdRoot}/install-schema.md`, '<p>Vérification en cours…</p>');
+    setStatus('Installation Assistant', 'Checking the Supabase and Discord configuration…' 'Checking');
+    await renderMarkdown(`${mdRoot}/install-schema.md`, '<p>Verification in progress…</p>');
 
     const supabaseCheck = await checkSupabaseConnectivity();
     if (!supabaseCheck.ok && supabaseCheck.reason === 'connection') {
       state.ok = false;
       state.details = { stage: 'supabase_connection', supabaseCheck };
-      setStatus('Connexion Supabase requise', 'Camply ne peut pas se connecter à Supabase.', 'Action requise');
-      await renderMarkdown(`${mdRoot}/install-supabase-connection.md`, '<p>Vérifie la configuration Supabase dans <code>supabase-client.js</code>.</p>');
+      setStatus('Supabase login required', 'Camply cannot connect to Supabase.', 'Action required');
+      await renderMarkdown(`${mdRoot}/install-supabase-connection.md`, '<p>Check the Supabase configuration in <code>supabase-client.js</code>.</p>');
       getEl('install-retry-btn').disabled = false;
       state.running = false;
       return false;
     }
 
     if (!supabaseCheck.ok && supabaseCheck.reason === 'missing_schema') {
-      setStatus('Initialisation de la base', 'Structure SQL absente, tentative d\'installation automatique…', 'Installation');
+      setStatus('Database initialization', 'Missing SQL structure, attempted automatic installation…', 'Installation');
       const autoInstall = await tryAutoInstallSchema();
       const afterInstall = autoInstall.ok ? await checkSupabaseConnectivity() : supabaseCheck;
       if (!afterInstall.ok) {
         state.ok = false;
         state.details = { stage: 'schema', autoInstall, afterInstall };
-        setStatus('Base de données à initialiser', 'La structure SQL n\'a pas pu être installée automatiquement.', 'Action requise');
-        await renderMarkdown(`${mdRoot}/install-schema.md`, '<p>Exécute <code>sql/00_fresh_install.sql</code> dans Supabase SQL Editor puis réessaye.</p>');
+        setStatus('Database to initialize', 'The SQL structure could not be installed automatically.', 'Action required');
+        await renderMarkdown(`${mdRoot}/install-schema.md`, '<p>Run the command <code>sql/00_fresh_install.sql</code> in Supabase SQL Editor and then try again.</p>');
         getEl('install-open-sql-btn').style.display = 'inline-flex';
         getEl('install-retry-btn').disabled = false;
         state.running = false;
@@ -137,7 +137,7 @@ const installAssistant = (() => {
     if (!discordCheck.ok) {
       state.ok = false;
       state.details = { stage: 'discord', discordCheck };
-      setStatus('Configuration Discord requise', 'Le provider Discord semble non configuré côté Supabase.', 'Action requise');
+      setStatus('Discord configuration required.', 'Le provider Discord semble non configuré côté Supabase.', 'Action requise');
       await renderMarkdown(`${mdRoot}/install-discord.md`, '<p>Active le provider Discord dans Supabase Auth puis réessaye.</p>');
       getEl('install-retry-btn').disabled = false;
       state.running = false;
