@@ -175,5 +175,6 @@ const installAssistant = (() => {
   };
 })();
 
+window.installAssistant = installAssistant;
 window.retryInstallationChecks = () => installAssistant.retry();
 window.openFreshInstallSql = () => installAssistant.openFreshInstallSql();
