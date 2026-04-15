@@ -106,10 +106,25 @@ const installAssistant = (() => {
     setStatus('Installation Assistant', 'Checking the Supabase and Discord configuration…', 'Checking');
     await renderMarkdown(`${mdRoot}/install-schema.md`, '<p>Verification in progress…</p>');
 
-    const supabaseCheck = await checkSupabaseConnectivity();
-    if (!supabaseCheck.ok && supabaseCheck.reason === 'connection') {
+    const results = {
+      supabaseCheck: await checkSupabaseConnectivity(),
+      autoInstall: null,
+      afterInstall: null,
+      discordCheck: null,
+    };
+
+    if (!results.supabaseCheck.ok && results.supabaseCheck.reason === 'missing_schema') {
+      results.autoInstall = await tryAutoInstallSchema();
+      results.afterInstall = results.autoInstall.ok ? await checkSupabaseConnectivity() : results.supabaseCheck;
+    }
+
+    // L'auth Discord est toujours vérifiée, même si un autre test échoue,
+    // afin de garantir un diagnostic stable avant d'afficher l'erreur prioritaire.
+    results.discordCheck = await checkDiscordProvider();
+
+    if (!results.supabaseCheck.ok && results.supabaseCheck.reason === 'connection') {
       state.ok = false;
-      state.details = { stage: 'supabase_connection', supabaseCheck };
+      state.details = { stage: 'supabase_connection', ...results };
       setStatus('Supabase login required', 'Camply cannot connect to Supabase.', 'Action required');
       await renderMarkdown(`${mdRoot}/install-supabase-connection.md`, '<p>Check the Supabase configuration in <code>supabase-client.js</code>.</p>');
       getEl('install-retry-btn').disabled = false;
@@ -117,26 +132,20 @@ const installAssistant = (() => {
       return false;
     }
 
-    if (!supabaseCheck.ok && supabaseCheck.reason === 'missing_schema') {
-      setStatus('Database initialization', 'Missing SQL structure, attempted automatic installation…', 'Installation');
-      const autoInstall = await tryAutoInstallSchema();
-      const afterInstall = autoInstall.ok ? await checkSupabaseConnectivity() : supabaseCheck;
-      if (!afterInstall.ok) {
-        state.ok = false;
-        state.details = { stage: 'schema', autoInstall, afterInstall };
-        setStatus('Database to initialize', 'The SQL structure could not be installed automatically.', 'Action required');
-        await renderMarkdown(`${mdRoot}/install-schema.md`, '<p>Run the command <code>sql/00_fresh_install.sql</code> in Supabase SQL Editor and then try again.</p>');
-        getEl('install-open-sql-btn').style.display = 'inline-flex';
-        getEl('install-retry-btn').disabled = false;
-        state.running = false;
-        return false;
-      }
+    if (!results.supabaseCheck.ok && results.supabaseCheck.reason === 'missing_schema' && !results.afterInstall?.ok) {
+      state.ok = false;
+      state.details = { stage: 'schema', ...results };
+      setStatus('Database to initialize', 'The SQL structure could not be installed automatically.', 'Action required');
+      await renderMarkdown(`${mdRoot}/install-schema.md`, '<p>Run the command <code>sql/00_fresh_install.sql</code> in Supabase SQL Editor and then try again.</p>');
+      getEl('install-open-sql-btn').style.display = 'inline-flex';
+      getEl('install-retry-btn').disabled = false;
+      state.running = false;
+      return false;
     }
 
-    const discordCheck = await checkDiscordProvider();
-    if (!discordCheck.ok) {
+    if (!results.discordCheck.ok) {
       state.ok = false;
-      state.details = { stage: 'discord', discordCheck };
+      state.details = { stage: 'discord', ...results };
       setStatus('Discord configuration required.', 'The Discord provider appears to be unconfigured on Supabase\'s side.', 'Action required');
       await renderMarkdown(`${mdRoot}/install-discord.md`, '<p>Activate the Discord provider in Supabase Auth and then try again.</p>');
       getEl('install-retry-btn').disabled = false;
