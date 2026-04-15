@@ -81,6 +81,23 @@
   </div>
 </div>
 
+<!-- Installation assistant -->
+<div id="install-screen">
+  <div class="install-box">
+    <div class="install-head">
+      <div class="install-logo">Camply <span>TTRPG</span></div>
+      <div id="install-status-badge" class="install-status-badge">Vérification…</div>
+    </div>
+    <h2 id="install-title">Assistant d'installation</h2>
+    <p id="install-subtitle">On vérifie la configuration de Supabase et Discord…</p>
+    <div class="install-actions">
+      <button id="install-retry-btn" class="btn-primary" onclick="retryInstallationChecks()">Réessayer</button>
+      <button id="install-open-sql-btn" class="btn-cancel" onclick="openFreshInstallSql()" style="display:none">Ouvrir le script SQL</button>
+    </div>
+    <article id="install-markdown" class="install-markdown">Chargement…</article>
+  </div>
+</div>
+
 <div id="app">
 
   <!-- Top bar -->
@@ -1146,6 +1163,7 @@
 
 <script src="i18n.js"></script>
 <script src="supabase-client.js"></script>
+<script src="install.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="game-system.js"></script>
 <script src="unread-markers.js"></script>

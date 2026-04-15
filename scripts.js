@@ -22,6 +22,10 @@ let filterFollowed   = false;
 // ══════════════════════════════════════════════════════════════
 
 async function doDiscordLogin() {
+  if (window.installAssistant && !installAssistant.canEnterApp()) {
+    await installAssistant.runChecks();
+    return;
+  }
   const btn   = document.getElementById('btn-discord');
   const errEl = document.getElementById('discord-error');
   errEl.classList.remove('show');
@@ -269,6 +273,10 @@ async function unfollowChar(charId) {
 // ══════════════════════════════════════════════════════════════
 
 async function init() {
+  if (window.installAssistant) {
+    const installationOk = await installAssistant.runChecks();
+    if (!installationOk) return;
+  }
   const safetyTimer = setTimeout(() => onSignedOut(), 5000);
   try {
     const { data: { session } } = await sb.auth.getSession();
@@ -865,4 +873,5 @@ async function cleanupOrphanTags(type) {
 
 // ── Boot ──────────────────────────────────────────────────────
 document.getElementById('app').style.display = 'none';
+window.bootCamplyApp = init;
 init();

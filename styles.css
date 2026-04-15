@@ -506,6 +506,19 @@ html, body {
 .auth-success      { background: rgba(68,170,119,0.10); border: 1px solid rgba(68,170,119,0.30); color: var(--mov); font-size: 12px; padding: 10px 12px; border-radius: 6px; margin-top: 12px; text-align: center; display: none; }
 .auth-success.show { display: block; }
 
+#install-screen { display: none; position: fixed; inset: 0; z-index: 350; background: var(--bg); align-items: center; justify-content: center; padding: 24px; }
+#install-screen.active { display: flex; }
+.install-box { width: min(900px, 100%); max-height: calc(100vh - 48px); background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.install-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.install-logo { font-size: 18px; font-weight: 700; color: var(--text); }
+.install-logo span { color: var(--text3); font-weight: 500; }
+.install-status-badge { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text2); border: 1px solid var(--border2); border-radius: 999px; padding: 4px 10px; }
+.install-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.install-markdown { margin-top: 6px; padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); overflow: auto; font-size: 14px; }
+.install-markdown h1, .install-markdown h2, .install-markdown h3 { margin: 0 0 10px; }
+.install-markdown p, .install-markdown ul, .install-markdown ol { margin: 0 0 10px; color: var(--text2); }
+.install-markdown code { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px; }
+
 .user-menu-wrap   { position: relative; }
 .user-btn         { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
 .user-btn:hover   { border-color: var(--border2); color: var(--text); }

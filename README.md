@@ -91,3 +91,12 @@ In site.webmanifest:
 
 6. **Set a campaign map** (optional)
     Edit map-config.js and add your maps if you want to use them in the application. 
+
+## Installation assistant (in-app)
+
+When a cloned template is opened, Camply now runs an installation assistant before letting users into the app:
+
+- Checks Supabase connectivity.
+- Detects missing SQL schema and attempts an automatic install via RPC (if an SQL runner RPC exists).
+- Checks Discord auth provider availability.
+- Displays contextual help pages from `/install/*.md`.
