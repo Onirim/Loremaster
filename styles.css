@@ -518,6 +518,7 @@ html, body {
 .install-markdown h1, .install-markdown h2, .install-markdown h3 { margin: 0 0 10px; }
 .install-markdown p, .install-markdown ul, .install-markdown ol { margin: 0 0 10px; color: var(--text2); }
 .install-markdown code { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px; }
+.install-markdown img {max-width: 100%;}
 
 .user-menu-wrap   { position: relative; }
 .user-btn         { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
