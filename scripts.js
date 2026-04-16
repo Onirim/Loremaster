@@ -22,9 +22,9 @@ let filterFollowed   = false;
 // ══════════════════════════════════════════════════════════════
 
 async function doDiscordLogin() {
-  if (window.installAssistant && !installAssistant.canEnterApp()) {
-    await installAssistant.runChecks();
-    return;
+  if (window.installAssistant) {
+    const installationOk = await installAssistant.runChecks();
+    if (!installationOk) return;
   }
   const btn   = document.getElementById('btn-discord');
   const errEl = document.getElementById('discord-error');

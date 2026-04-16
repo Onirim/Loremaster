@@ -78,8 +78,45 @@ const installAssistant = (() => {
     }
   }
 
-    async function checkDiscordProvider() {
+  function readDiscordProviderFlag(settings) {
+    if (!settings || typeof settings !== 'object') return null;
+
+    const candidates = [
+      settings.external?.discord?.enabled,
+      settings.external?.discord,
+      settings.providers?.discord?.enabled,
+      settings.external_discord_enabled,
+    ];
+
+    for (const value of candidates) {
+      if (typeof value === 'boolean') return value;
+    }
+
+    return null;
+  }
+
+  async function checkDiscordProvider() {
     try {
+      const settingsRes = await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+        },
+      });
+
+      if (settingsRes.ok) {
+        const settings = await settingsRes.json();
+        const enabled = readDiscordProviderFlag(settings);
+        if (enabled === false) {
+          return {
+            ok: false,
+            error: { message: 'Unsupported provider: provider is not enabled' },
+            source: 'settings',
+          };
+        }
+        if (enabled === true) return { ok: true, source: 'settings' };
+      }
+
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'discord',
         options: {
@@ -87,8 +124,8 @@ const installAssistant = (() => {
           redirectTo: window.location.origin + window.location.pathname,
         }
       });
-      if (!error) return { ok: true };
-      return { ok: false, error };
+      if (!error) return { ok: true, source: 'oauth_probe' };
+      return { ok: false, error, source: 'oauth_probe' };
     } catch (error) {
       return { ok: false, error };
     }
