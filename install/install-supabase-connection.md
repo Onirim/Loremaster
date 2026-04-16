@@ -1,20 +1,20 @@
-# Connexion Supabase non disponible
+# Supabase Connection Unavailable
 
-Camply n'arrive pas à communiquer avec Supabase.
+Camply is unable to communicate with Supabase.
 
-## Etapes d'installation
+## Installation Steps
 
-1. Inscrivez-vous sur https://supabase.com/, c'est gratuit !
-2. Créez votre organisation, puis votre projet.
-3. Rendez-vous dans le menu de connexion et allez chercher votre URL et votre clé Supabase.
+1. Sign up at https://supabase.com/, it's free!
+2. Create your organization, then your project.
+3. Go to the connection menu and retrieve your Supabase URL and key.
 
 ![Finding supabase URL and Key](./install/supabase_1.png)
 
 ![Finding supabase URL and Key](./install/supabase_2.png)
 
-4. Sur Github, éditez le fichier `supabase-client.js` et entrez le `SUPABASE_URL` et `SUPABASE_KEY` récupérés précédemment.
-5. Dans Supabase > **Authentication > URL Configuration**, ajoutez votre URL GitHub Pages.
+4. On Github, edit the `supabase-client.js` file and enter the `SUPABASE_URL` and `SUPABASE_KEY` retrieved earlier.
+5. In Supabase > Authentication > URL Configuration, add your GitHub Pages URL.
    
 ![Adding Github Pages URL](./install/supabase_3.png)
 
-Ensuite, cliquez sur **Réessayer**.
+Then, click on **Retry**.
