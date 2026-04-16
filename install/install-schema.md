@@ -1,17 +1,16 @@
-# Base de données non initialisée
+# Database Not Initialized
 
-La connexion Supabase est correcte, mais la structure SQL de Camply est absente.
+The Supabase connection is correct, but the Camply SQL structure is missing.
 
-## Ce que Camply tente de faire
+## Run the SQL Installation Script
 
-- Exécuter automatiquement `sql/00_fresh_install.sql`.
-- Refaire une vérification de la table `profiles`.
+1. Open **Supabase > SQL Editor**.
 
-## Si l'installation automatique échoue
+![Open SQL Editor](./install/supabase_4.png)
 
-1. Ouvre **Supabase > SQL Editor**.
-2. Copie/colle le contenu de `sql/00_fresh_install.sql`.
-3. Exécute le script.
-4. Reviens dans l'app et clique sur **Réessayer**.
+2. Copy/paste the contents of `sql/00_fresh_install.sql` into the SQL editor.
+3. Execute the script.
 
-Tu peux aussi cliquer sur **Ouvrir le script SQL** pour l'afficher dans l'onglet du dépôt.
+![Open SQL Editor](./install/supabase_5.png)
+
+4. Return to the app and click on **Retry**.
