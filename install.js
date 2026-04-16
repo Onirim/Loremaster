@@ -35,7 +35,16 @@ const installAssistant = (() => {
       if (!value || typeof value !== 'string') return true;
       const trimmed = value.trim();
       if (!trimmed) return true;
-      return trimmed.includes('XXXXXXXX') || trimmed.includes('YOUR_') || trimmed.includes('example');
+      return /X{4,}/i.test(trimmed) || trimmed.includes('YOUR_') || trimmed.includes('example');
+    };
+
+    const isMissingSchemaError = (error) => {
+      if (!error) return false;
+      const message = (error.message || '').toLowerCase();
+      return error.code === '42P01'
+        || error.code === 'PGRST205'
+        || (message.includes('relation') && message.includes('does not exist'))
+        || (message.includes('could not find') && message.includes('in the schema cache'));
     };
 
     if (isPlaceholder(SUPABASE_URL) || isPlaceholder(SUPABASE_KEY)) {
@@ -45,8 +54,7 @@ const installAssistant = (() => {
     try {
       const { error } = await sb.from('profiles').select('id').limit(1);
       if (!error) return { ok: true };
-      if (error.code === '42P01') return { ok: false, reason: 'missing_schema', error };
-      if ((error.message || '').toLowerCase().includes('relation') && (error.message || '').toLowerCase().includes('does not exist')) {
+      if (isMissingSchemaError(error)) {
         return { ok: false, reason: 'missing_schema', error };
       }
       return { ok: false, reason: 'connection', error };
