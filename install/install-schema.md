@@ -8,7 +8,7 @@ The Supabase connection is correct, but the Camply SQL structure is missing.
 
 ![Open SQL Editor](./install/supabase_4.png)
 
-### 2. Copy/paste the contents of sql/00_fresh_install.sql into the SQL editor.
+### 2. Copy/paste the contents of `sql/00_fresh_install.sql` into the SQL editor.
 ### 3. Execute the script.
 
 ![Open SQL Editor](./install/supabase_5.png)
