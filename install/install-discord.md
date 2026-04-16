@@ -14,7 +14,7 @@ Supabase is accessible, the database is ready, but Discord authentication is not
 ![Supabase Discord Auth](./install/supabase_7.png)
 
 ### 4. Paste the `Client ID` and `Client Secret`
-### 5. Retrieve the `Discord OAuth Redirect`.
+### 5. Retrieve the `Discord OAuth Redirect`. Don't forget to save!
 
 ![Supabase Discord Auth](./install/supabase_8.png)
 
