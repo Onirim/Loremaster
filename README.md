@@ -15,6 +15,7 @@ What the template manages (do not modify)
 - Sharing system via 8-character code
 - Subscription to other player's content
 - Ownership transfers of objects
+- New unread objects indicators
 - Tags and filters
 - Illustration uploads
 - i18n FR/EN
@@ -39,29 +40,10 @@ Optional: Adapt for your game
 
 3. **Create a Supabase project (can be a free project)**
 
-    In Supabase SQL Editor:
+    In Supabase SQL Editor, run:
    ```
-        For a fresh install: run only sql/00_fresh_install.sql
+        sql/00_fresh_install.sql
 
-        For an existing database upgrade: run migration files one by one, in order:
-        sql/00_schema.sql
-        sql/01_tags.sql
-        sql/02_followed.sql
-        sql/03_chronicles.sql
-        sql/04_documents.sql
-        sql/05_document_tags.sql
-        sql/06_storage.sql
-        sql/07_migration_campaigns.sql
-        sql/08_fix-profiles-v2.sql
-        sql/09_character_tag.sql
-        sql/10_transfer.sql
-        sql/11_transfer_auto_follow.sql
-        sql/12_transfer_fix_double.sql
-        sql/13_sync_owner_tags.sql
-        sql/14_fix_doc_tags_unique_conflict.sql
-        sql/15_map_markers.sql
-        sql/16_map_sharing.sql
-        sql/17_multi_map.sql
    ```
     Configure Discord auth in Authentication > Providers
     Add the GitHub Pages URL in Authentication > URL Configuration
