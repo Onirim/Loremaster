@@ -78,32 +78,7 @@ const installAssistant = (() => {
     }
   }
 
-  async function tryAutoInstallSchema() {
-    try {
-      const sqlRes = await fetch('sql/00_fresh_install.sql', { cache: 'no-store' });
-      if (!sqlRes.ok) return { ok: false, reason: 'sql_fetch_failed' };
-      const sql = await sqlRes.text();
-
-      // Tentatives d'auto-install (si un RPC admin existe déjà côté projet).
-      const candidates = [
-        { fn: 'run_sql', args: { sql_query: sql } },
-        { fn: 'run_sql', args: { p_sql: sql } },
-        { fn: 'execute_sql', args: { sql_query: sql } },
-        { fn: 'execute_sql', args: { p_sql: sql } },
-      ];
-
-      for (const candidate of candidates) {
-        const { error } = await sb.rpc(candidate.fn, candidate.args);
-        if (!error) return { ok: true, mode: `rpc:${candidate.fn}` };
-      }
-
-      return { ok: false, reason: 'no_rpc_runner' };
-    } catch {
-      return { ok: false, reason: 'auto_install_failed' };
-    }
-  }
-
-  async function checkDiscordProvider() {
+    async function checkDiscordProvider() {
     try {
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'discord',
@@ -161,7 +136,6 @@ const installAssistant = (() => {
     await renderMarkdown(`${mdRoot}/install-schema.md`, '<p>Verification in progress…</p>');
 
     if (!results.supabaseCheck.ok && results.supabaseCheck.reason === 'missing_schema') {
-      results.autoInstall = await tryAutoInstallSchema();
       results.afterInstall = results.autoInstall.ok ? await checkSupabaseConnectivity() : results.supabaseCheck;
     }
 
