@@ -7,7 +7,7 @@
 -- BEGIN sql/00_schema.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Schéma Supabase
+-- Camply — Schéma Supabase
 -- À coller dans : Supabase Dashboard > SQL Editor > New query
 -- ══════════════════════════════════════════════════════════════
 
@@ -147,7 +147,7 @@ CREATE POLICY "characters_select_public_anon"
 -- BEGIN sql/01_tags.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Système de tags
+-- Camply — Système de tags
 -- À coller dans : Supabase Dashboard > SQL Editor > New query
 -- ══════════════════════════════════════════════════════════════
 
@@ -226,7 +226,7 @@ CREATE POLICY "character_tags_delete" ON public.character_tags FOR DELETE
 -- BEGIN sql/02_followed.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Partage de personnages entre membres
+-- Camply — Partage de personnages entre membres
 -- À coller dans : Supabase Dashboard > SQL Editor > New query
 -- ══════════════════════════════════════════════════════════════
 
@@ -304,7 +304,7 @@ CREATE POLICY "followed_delete_own"
 -- BEGIN sql/03_chronicles.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Chroniques v2 (migration incluse)
+-- Camply — Chroniques v2 (migration incluse)
 -- À coller dans : Supabase Dashboard > SQL Editor > New query
 -- ══════════════════════════════════════════════════════════════
 
@@ -470,7 +470,7 @@ CREATE POLICY "followed_chr_delete" ON public.followed_chronicles FOR DELETE
 -- BEGIN sql/04_documents.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Documents
+-- Camply — Documents
 -- À coller dans : Supabase Dashboard > SQL Editor > New query
 -- ══════════════════════════════════════════════════════════════
 
@@ -604,7 +604,7 @@ create policy "Users manage own followed doc tags" on followed_document_tags
 -- BEGIN sql/06_storage.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Bucket Storage pour les illustrations
+-- Camply — Bucket Storage pour les illustrations
 -- À coller dans : Supabase Dashboard > SQL Editor > New query
 -- ══════════════════════════════════════════════════════════════
 
@@ -672,7 +672,7 @@ CREATE POLICY "illustrations_delete_own"
 -- BEGIN sql/07_migration_campaigns.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Migration : Campagnes
+-- Camply — Migration : Campagnes
 -- À exécuter dans l'éditeur SQL de Supabase
 -- ══════════════════════════════════════════════════════════════
 
@@ -771,7 +771,7 @@ CREATE POLICY followed_campaigns_self ON followed_campaigns FOR ALL
 -- BEGIN sql/08_fix-profiles-v2.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Correction RLS profils + sync Discord
+-- Camply — Correction RLS profils + sync Discord
 -- ══════════════════════════════════════════════════════════════
 
 -- ── 1. Corrige les politiques RLS sur profiles ────────────────
@@ -1163,7 +1163,7 @@ GRANT EXECUTE ON FUNCTION public._cleanup_doc_tags_on_transfer(UUID, UUID) TO au
 -- BEGIN sql/11_transfer_auto_follow.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Patch : abonnement automatique après transfert
+-- Camply — Patch : abonnement automatique après transfert
 -- Après un transfert, l'ancien propriétaire est automatiquement
 -- abonné à l'objet qu'il vient de céder.
 -- À coller dans : Supabase Dashboard > SQL Editor > New query
@@ -1346,7 +1346,7 @@ GRANT EXECUTE ON FUNCTION public.transfer_item(TEXT, TEXT, TEXT) TO authenticate
 -- BEGIN sql/12_transfer_fix_double.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Patch v2 : transfert + nettoyage abonnement
+-- Camply — Patch v2 : transfert + nettoyage abonnement
 -- destinataire + abonnement automatique ancien proprio
 -- À coller dans : Supabase Dashboard > SQL Editor > New query
 -- ══════════════════════════════════════════════════════════════
@@ -1528,7 +1528,7 @@ GRANT EXECUTE ON FUNCTION public.transfer_item(TEXT, TEXT, TEXT) TO authenticate
 -- BEGIN sql/13_sync_owner_tags.sql
 -- ==================================================
 -- ══════════════════════════════════════════════════════════════
--- ENERGY SYSTEM — Patch : sync tags propriétaire → abonnés (v2)
+-- Camply — Patch : sync tags propriétaire → abonnés (v2)
 -- Corrections :
 --   1. Signature RPC compatible PostgREST (p_item_id en TEXT
 --      pour éviter les erreurs de cast depuis le JS, converti
