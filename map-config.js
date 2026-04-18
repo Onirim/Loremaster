@@ -4,7 +4,6 @@
 // ══════════════════════════════════════════════════════════════
 
 const MAP_CONFIG = {
-
   // ── Cartes disponibles (1 à 5) ────────────────────────────
   // Chaque carte a une clé unique (key), un nom affiché (name),
   // le chemin de son image et ses dimensions natives en pixels.

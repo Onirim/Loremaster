@@ -10,6 +10,7 @@ let mapFollowedLayers = {};   // layerId → { layer, markers: {id→marker} }
 let mapOwnLayers      = {};   // map_key → layer
 let mapFollowedIds    = [];   // [layerId, ...]
 let mapLoaded         = false;
+let mapAccessByKey    = {};
 
 // Transformation courante
 let mapTransform = { x: 0, y: 0, scale: 1 };
@@ -51,6 +52,79 @@ function _isMarkerOnCurrentMap(marker) {
   return _normalizeMapKey(marker?.map_key) === currentMapKey;
 }
 
+function _normalizeDiscordName(name) {
+  return (name || '')
+    .trim()
+    .replace(/^@+/, '')
+    .toLowerCase();
+}
+
+function _getCurrentDiscordNames() {
+  if (!currentUser) return [];
+  const meta = currentUser.user_metadata || {};
+  return [
+    meta.full_name,
+    meta.name,
+    meta.username,
+    currentUser.email ? currentUser.email.split('@')[0] : '',
+  ].map(_normalizeDiscordName).filter(Boolean);
+}
+
+function _isMapAdmin() {
+  const admins = (globalThis.APP_CONFIG?.adminDiscordUsers || [])
+    .map(_normalizeDiscordName)
+    .filter(Boolean);
+  if (!admins.length) return false;
+  const names = _getCurrentDiscordNames();
+  return names.some(n => admins.includes(n));
+}
+
+function _recomputeMapAccess() {
+  const keys = (MAP_CONFIG.maps || []).map(m => m.key);
+  const canSeeAll = _isMapAdmin();
+  mapAccessByKey = {};
+
+  if (canSeeAll) {
+    keys.forEach(k => { mapAccessByKey[k] = true; });
+    return;
+  }
+
+  const granted = new Set();
+  Object.keys(mapOwnLayers || {}).forEach(k => granted.add(_normalizeMapKey(k)));
+  Object.values(mapFollowedLayers || {}).forEach(({ layer }) => {
+    granted.add(_normalizeMapKey(layer?.map_key));
+  });
+  keys.forEach(k => { mapAccessByKey[k] = granted.has(_normalizeMapKey(k)); });
+}
+
+function _canAccessMap(mapKey = currentMapKey) {
+  return !!mapAccessByKey[_normalizeMapKey(mapKey)];
+}
+
+function _firstAccessibleMapKey() {
+  const maps = MAP_CONFIG.maps || [];
+  const first = maps.find(m => _canAccessMap(m.key));
+  return first?.key || null;
+}
+
+function _renderMapAccessState() {
+  if (!_mapViewport) return;
+  let msg = document.getElementById('map-no-access');
+  if (!msg) {
+    msg = document.createElement('div');
+    msg.id = 'map-no-access';
+    msg.className = 'map-no-access';
+    _mapViewport.appendChild(msg);
+  }
+  msg.textContent = t('map_access_denied');
+  msg.style.display = _canAccessMap() ? 'none' : 'flex';
+
+  const markerCount = document.getElementById('map-marker-count');
+  if (markerCount && !_canAccessMap()) {
+    markerCount.innerHTML = ti('map_marker_count_many', { n: 0 });
+  }
+}
+
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
@@ -67,17 +141,26 @@ async function initMap() {
   if (!currentMapKey) currentMapKey = maps[0].key;
 
   _buildMapSelector();
-  _buildMapImage();
   _bindMapEvents();
 
   await Promise.all([
-    loadMapMarkersFromDB(),
     loadAllOwnLayersFromDB(),
     loadFollowedLayersFromDB(),
   ]);
 
+  _recomputeMapAccess();
+  const fallbackMap = _firstAccessibleMapKey();
+  if (!_canAccessMap(currentMapKey) && fallbackMap) {
+    currentMapKey = fallbackMap;
+  }
+
+  await loadMapMarkersFromDB();
+  _refreshMapSelectorAccess();
+  _buildMapImage();
+
   _renderAllMarkers();
   _renderLayerPanel();
+  _renderMapAccessState();
   mapLoaded = true;
 }
 
@@ -112,11 +195,26 @@ function _buildMapSelector() {
 
   wrap.appendChild(sel);
   toolbar.insertBefore(wrap, toolbar.firstChild);
+  _refreshMapSelectorAccess();
+}
+
+function _refreshMapSelectorAccess() {
+  const sel = document.getElementById('map-selector');
+  if (!sel) return;
+  [...sel.options].forEach(opt => {
+    opt.disabled = !_canAccessMap(opt.value);
+  });
 }
 
 /** Bascule vers une autre carte. */
 async function switchMap(key) {
   if (!key || key === currentMapKey) return;
+  if (!_canAccessMap(key)) {
+    showToast(t('map_toast_map_locked'));
+    const selGuard = document.getElementById('map-selector');
+    if (selGuard) selGuard.value = currentMapKey;
+    return;
+  }
   currentMapKey = key;
 
   // Synchronise le sélecteur
@@ -151,6 +249,7 @@ async function switchMap(key) {
   _updateMarkerCount();
 
   _renderLayerPanel();
+  _renderMapAccessState();
 }
 
 // ── Construction de l'image ───────────────────────────────────
@@ -158,6 +257,10 @@ async function switchMap(key) {
 function _buildMapImage() {
   const cfg = _getCurrentMapConfig();
   if (!cfg) return;
+  if (!_canAccessMap()) {
+    _renderMapAccessState();
+    return;
+  }
 
   const img = document.createElement('img');
   img.id = 'map-image'; img.className = 'map-image';
@@ -258,6 +361,7 @@ function _bindMapEvents() {
   const vp = _mapViewport;
 
   vp.addEventListener('wheel', e => {
+    if (!_canAccessMap()) return;
     e.preventDefault();
     const r = vp.getBoundingClientRect();
     _zoomAt(e.clientX - r.left, e.clientY - r.top,
@@ -280,6 +384,7 @@ function _bindMapEvents() {
   vp.addEventListener('touchend', () => { _pinch = null; });
 
   vp.addEventListener('mousedown', e => {
+    if (!_canAccessMap()) return;
     const popup = document.getElementById('map-popup');
     if (popup && !popup.contains(e.target)) _closePopup();
     if (e.shiftKey && e.button === 0) {
@@ -314,6 +419,7 @@ function _bindMapEvents() {
                  ox: mapTransform.x, oy: mapTransform.y };
   }, { passive: true });
   vp.addEventListener('touchmove', e => {
+    if (!_canAccessMap()) return;
     if (e.touches.length === 1 && _touch) {
       mapTransform.x = _touch.ox + e.touches[0].clientX - _touch.x;
       mapTransform.y = _touch.oy + e.touches[0].clientY - _touch.y;
@@ -340,6 +446,10 @@ function _pinchDist(e) {
 /** Charge les marqueurs de l'utilisateur pour la carte courante uniquement. */
 async function loadMapMarkersFromDB() {
   if (!currentUser) return;
+  if (!_canAccessMap()) {
+    mapMarkers = {};
+    return;
+  }
   const { data, error } = await sb.from('map_markers')
     .select('id, x, y, name, description, color, map_key')
     .eq('user_id', currentUser.id)
@@ -417,6 +527,9 @@ async function saveOwnLayerToDB() {
     mapOwnLayers[data.map_key] = data;
   }
   _renderLayerPanel();
+  _recomputeMapAccess();
+  _refreshMapSelectorAccess();
+  _renderMapAccessState();
   showToast(t('map_toast_saved'));
 }
 
@@ -452,6 +565,7 @@ async function loadFollowedLayersFromDB() {
       markers: Object.fromEntries((markers || []).map(m => [m.id, { ...m, map_key: _normalizeMapKey(m.map_key) }])),
     };
   }
+  _recomputeMapAccess();
 }
 
 /** Précharge les couches carte (propres + suivies) même hors vue Carte. */
@@ -494,6 +608,7 @@ async function followMapLayerByCode(code) {
 
   if (!mapFollowedIds.includes(data.id)) mapFollowedIds.push(data.id);
   await loadFollowedLayersFromDB();
+  _refreshMapSelectorAccess();
 
   // Si la couche correspond à une autre carte, basculer dessus
   if (data.map_key && data.map_key !== currentMapKey) {
@@ -503,6 +618,7 @@ async function followMapLayerByCode(code) {
   }
 
   _renderLayerPanel();
+  _renderMapAccessState();
   document.getElementById('map-follow-input').value = '';
   const msg = ti('map_toast_layer_subscribed', { title: data.title || clean });
   showToast(msg);
@@ -524,8 +640,16 @@ async function unfollowMapLayer(layerId) {
     .delete().eq('user_id', currentUser.id).eq('layer_id', layerId);
   mapFollowedIds = mapFollowedIds.filter(id => id !== layerId);
   delete mapFollowedLayers[layerId];
+  _recomputeMapAccess();
+  _refreshMapSelectorAccess();
+  const fallbackMap = _firstAccessibleMapKey();
+  if (!_canAccessMap(currentMapKey) && fallbackMap) {
+    await switchMap(fallbackMap);
+    return;
+  }
   _renderAllMarkers();
   _renderLayerPanel();
+  _renderMapAccessState();
   showToast(t('map_toast_layer_unsubscribed'));
 }
 
@@ -536,6 +660,8 @@ async function unfollowMapLayer(layerId) {
 function _renderAllMarkers() {
   if (!_mapCanvas || !_mapViewport) return;
   _mapViewport.querySelectorAll('.map-marker').forEach(el => el.remove());
+  _renderMapAccessState();
+  if (!_canAccessMap()) return;
 
   // Couches suivies en dessous : seulement celles de la carte courante
   Object.values(mapFollowedLayers).forEach(({ layer, markers }) => {

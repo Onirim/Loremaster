@@ -145,6 +145,23 @@
 .map-viewport:active { cursor: grabbing; }
 .map-viewport.adding-marker { cursor: crosshair; }
 
+.map-no-access {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: var(--text2);
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  background: linear-gradient(0deg, rgba(6,10,20,.88), rgba(6,10,20,.88));
+}
+
 /* Conteneur transformable (pan + zoom) */
 .map-canvas {
   position: absolute;
