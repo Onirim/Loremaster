@@ -10,3 +10,6 @@ const APP_CONFIG = {
   // Exemples: ['Onirim', 'MJ_Principal']
   adminDiscordUsers: ['onirim.bzh'],
 };
+
+// Rend la config accessible de façon explicite depuis tous les scripts.
+globalThis.APP_CONFIG = APP_CONFIG;
