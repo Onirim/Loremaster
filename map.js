@@ -56,18 +56,23 @@ function _normalizeDiscordName(name) {
   return (name || '')
     .trim()
     .replace(/^@+/, '')
+    .replace(/#\d+$/, '')
     .toLowerCase();
 }
 
 function _getCurrentDiscordNames() {
   if (!currentUser) return [];
   const meta = currentUser.user_metadata || {};
-  return [
-    meta.full_name,
-    meta.name,
-    meta.username,
-    currentUser.email ? currentUser.email.split('@')[0] : '',
-  ].map(_normalizeDiscordName).filter(Boolean);
+  // IMPORTANT: on s'aligne volontairement sur le nom affiché
+  // dans le menu utilisateur (updateUserUI dans scripts.js).
+  const displayedName = meta.full_name
+    || meta.name
+    || meta.username
+    || (currentUser.email ? currentUser.email.split('@')[0] : '');
+
+  return [displayedName]
+    .map(_normalizeDiscordName)
+    .filter(Boolean);
 }
 
 function _isMapAdmin() {
