@@ -21,13 +21,13 @@ const MAP_CONFIG = {
       imageHeight: 4095,
     },
     // Décommentez et remplissez pour ajouter d'autres cartes :
-    //{
-    //  key:         'city',
-    //  name:        'City',
-    //  image:       './pictures/city.png',
-    //  imageWidth:  4372,
-    //  imageHeight: 3836,
-    //},
+     {
+      key:         'region',              // ← identifiant unique, ne pas changer si données existantes
+      name:        'Region Map',     // ← nom affiché dans le sélecteur
+      image:       './pictures/map.png',
+      imageWidth:  4095,
+      imageHeight: 4095,
+    },
     // {
     //   key:         'dungeon',
     //   name:        'Donjon',
