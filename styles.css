@@ -593,5 +593,5 @@ html, body {
 .follow-input-wrap input { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 12px; outline: none; transition: border-color 0.15s; max-width: 200px; }
 .follow-input-wrap input:focus { border-color: var(--accent); }
 .follow-input-wrap input::placeholder { text-transform: none; letter-spacing: 0; color: var(--text3); font-family: var(--font-body); font-size: 12px; }
-.btn-follow       { background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); font-family: var(--font-body); font-size: 12px; font-weight: 500; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-.btn-follow:hover { border-color: var(--sup); color: var(--sup); }
+.btn-follow       { background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); font-family: var(--font-body); font-size: 12px; font-weight: 500; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.15s; white-space: nowrap; text-transform: uppercase; }
+.btn-follow:hover { border-color: var(--text2); color: var(--sup); }
