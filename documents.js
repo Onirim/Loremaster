@@ -7,6 +7,7 @@ let documents         = {};
 let followedDocuments = {};
 let followedDocIds    = [];
 let editingDocId      = null;
+let editingDocIsFollowed = false;
 let docState          = null;
 
 // ── État tags documents ───────────────────────────────────────
@@ -23,7 +24,7 @@ let filterFollowedDocs  = false;
 async function loadDocumentsFromDB() {
   const { data, error } = await sb
     .from('documents')
-    .select('id, title, content, is_public, share_code, illustration_url, illustration_position, updated_at')
+    .select('id, title, content, is_public, allow_write_share, share_code, illustration_url, illustration_position, updated_at')
     .eq('user_id', currentUser.id)
     .order('updated_at', { ascending: false });
   if (error) { console.error('Erreur chargement documents:', error); return; }
@@ -86,7 +87,7 @@ async function loadFollowedDocumentsFromDB() {
 
   const { data } = await sb
     .from('documents')
-    .select('id, title, content, is_public, share_code, illustration_url, illustration_position, updated_at, user_id')
+    .select('id, title, content, is_public, allow_write_share, share_code, illustration_url, illustration_position, updated_at, user_id')
     .in('id', followedDocIds)
     .eq('is_public', true);
 
@@ -110,13 +111,16 @@ async function loadFollowedDocumentsFromDB() {
 async function saveDocumentToDB() {
   if (!docState.title.trim()) { alert(t('alert_doc_no_title')); return; }
   const payload = {
-    user_id:               currentUser.id,
     title:                 docState.title.trim(),
     content:               docState.content,
-    is_public:             docState.is_public || false,
     illustration_url:      docState.illustration_url || '',
     illustration_position: docState.illustration_position || 0,
   };
+  if (!editingDocIsFollowed) {
+    payload.user_id = currentUser.id;
+    payload.is_public = docState.is_public || false;
+    payload.allow_write_share = docState.allow_write_share || false;
+  }
   const isUUID = editingDocId &&
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(editingDocId);
 
@@ -133,8 +137,13 @@ async function saveDocumentToDB() {
   editingDocId = result.data.id;
   docState.share_code = result.data.share_code;
   await saveDocTagsToDB(editingDocId);
-  documents[editingDocId] = { ...docState, id: editingDocId };
-  docTagMap[editingDocId] = (docState.tags || []).map(tg => tg.id);
+if (editingDocIsFollowed) {
+    followedDocuments[editingDocId] = { ...followedDocuments[editingDocId], ...docState, id: editingDocId };
+    followedDocTagMap[editingDocId] = (docState.tags || []).map(tg => tg.id);
+  } else {
+    documents[editingDocId] = { ...docState, id: editingDocId };
+    docTagMap[editingDocId] = (docState.tags || []).map(tg => tg.id);
+  }
   updateDocShareCodeBox();
   showToast(t('toast_doc_saved'));
 }
@@ -306,6 +315,9 @@ function docCardHTML(id, d, isFollowed) {
     return `<div class="doc-card" onclick="openDocReader('${id}')">${unreadDot}
       ${d.illustration_url ? `<img class="card-illus" src="${esc(d.illustration_url)}" style="object-position:center ${d.illustration_position||0}%" onclick="event.stopPropagation();openLightbox('${esc(d.illustration_url)}')" alt="">` : ''}
       <div class="doc-card-actions">
+        ${d.allow_write_share ? `<button class="icon-btn" onclick="event.stopPropagation();openDocEditor('${id}')" title="${t('btn_edit')}">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2l3 3-9 9H2v-3z"/></svg>
+        </button>` : ''}
         <button class="icon-btn" onclick="event.stopPropagation();editFollowedDocTags('${id}')" title="${t('card_manage_tags')}">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 4h14M1 8h10M1 12h6"/></svg>
         </button>
@@ -358,7 +370,8 @@ function docCardHTML(id, d, isFollowed) {
 
 function newDocument() {
   editingDocId = null;
-  docState = { title:'', content:'', is_public:false, share_code:null,
+  editingDocIsFollowed = false;
+  docState = { title:'', content:'', is_public:false, allow_write_share:false, share_code:null,
                illustration_url:'', illustration_position:0, tags:[] };
   showView('doc-editor');
   populateDocEditor();
@@ -366,9 +379,12 @@ function newDocument() {
 
 function openDocEditor(id) {
   editingDocId = id;
-  docState = { ...documents[id], tags:[] };
-  if (editingDocId && docTagMap[editingDocId]) {
-    docState.tags = docTagMap[editingDocId]
+  editingDocIsFollowed = !!followedDocuments[id] && !documents[id];
+  const sourceDoc = documents[id] || followedDocuments[id];
+  docState = { ...sourceDoc, tags:[] };
+  const tagSource = editingDocIsFollowed ? followedDocTagMap : docTagMap;
+  if (editingDocId && tagSource[editingDocId]) {
+    docState.tags = tagSource[editingDocId]
       .map(tid => allDocTags.find(tg => tg.id === tid))
       .filter(Boolean);
   }
@@ -381,6 +397,12 @@ function populateDocEditor() {
   document.getElementById('doc-f-content').value = docState.content || '';
   const pub = document.getElementById('doc-f-public');
   pub.checked = docState.is_public || false;
+  pub.disabled = editingDocIsFollowed;
+  const writeShare = document.getElementById('doc-f-write-share');
+  if (writeShare) {
+    writeShare.checked = docState.allow_write_share || false;
+    writeShare.disabled = editingDocIsFollowed || !pub.checked;
+  }
   document.getElementById('doc-public-label').textContent =
     pub.checked ? t('share_code_active_doc') : t('share_code_inactive_doc');
   setDocIllusPreview(docState.illustration_url || '', docState.illustration_position || 0);
@@ -393,7 +415,12 @@ function updateDocForm() {
   docState.title     = document.getElementById('doc-f-title').value;
   const contentEl = document.getElementById('doc-f-content');
   docState.content   = normalizeMarkdownTextarea(contentEl);
-  docState.is_public = document.getElementById('doc-f-public').checked;
+  if (!editingDocIsFollowed) {
+    docState.is_public = document.getElementById('doc-f-public').checked;
+    const writeShare = document.getElementById('doc-f-write-share');
+    docState.allow_write_share = !!writeShare?.checked && docState.is_public;
+    if (writeShare && !docState.is_public) writeShare.checked = false;
+  }
   document.getElementById('doc-public-label').textContent =
     docState.is_public ? t('share_code_active_doc') : t('share_code_inactive_doc');
   updateDocShareCodeBox();
@@ -432,6 +459,7 @@ function copyDocShareCode() {
 }
 
 function shareDocBtn() {
+  if (editingDocIsFollowed) { showToast(t('toast_no_permission')); return; }
   if (!docState?.is_public) { showToast(t('toast_chr_share_need_public')); return; }
   const code = docState?.share_code || (editingDocId && documents[editingDocId]?.share_code);
   if (!code) { showToast(t('toast_chr_share_need_save')); return; }
@@ -516,7 +544,8 @@ function openDocReader(id) {
         onclick="openLightbox('${esc(d.illustration_url)}')" alt="">` : '';
 
   // ── Bannière ───────────────────────────────────────────
-  const bannerHtml = isOwn
+  const canEdit = isOwn || (!!followedDocuments[id] && !!d.allow_write_share);
+  const bannerHtml = canEdit
     ? `<div class="doc-reader-header">
         <button class="btn-cancel" onclick="openDocEditor('${id}')">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13"><path d="M11 2l3 3-9 9H2v-3z"/></svg>
