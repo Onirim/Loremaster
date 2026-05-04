@@ -527,6 +527,27 @@ CREATE TABLE IF NOT EXISTS public.followed_documents (
 
 CREATE INDEX IF NOT EXISTS followed_documents_user_idx ON public.followed_documents(user_id);
 
+CREATE OR REPLACE FUNCTION public.guard_document_shared_update()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  IF auth.uid() IS DISTINCT FROM OLD.user_id THEN
+    NEW.user_id := OLD.user_id;
+    NEW.is_public := OLD.is_public;
+    NEW.share_code := OLD.share_code;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS guard_document_shared_update ON public.documents;
+CREATE TRIGGER guard_document_shared_update
+  BEFORE UPDATE ON public.documents
+  FOR EACH ROW
+  EXECUTE FUNCTION public.guard_document_shared_update();
+
 
 -- ── 3. RLS ────────────────────────────────────────────────────
 
@@ -547,7 +568,20 @@ CREATE POLICY "documents_insert" ON public.documents FOR INSERT
 
 DROP POLICY IF EXISTS "documents_update" ON public.documents;
 CREATE POLICY "documents_update" ON public.documents FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (
+    auth.uid() = user_id
+    OR EXISTS (
+      SELECT 1 FROM public.followed_documents fd
+      WHERE fd.document_id = id AND fd.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    auth.uid() = user_id
+    OR EXISTS (
+      SELECT 1 FROM public.followed_documents fd
+      WHERE fd.document_id = id AND fd.user_id = auth.uid()
+    )
+  );
 
 DROP POLICY IF EXISTS "documents_delete" ON public.documents;
 CREATE POLICY "documents_delete" ON public.documents FOR DELETE

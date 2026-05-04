@@ -411,6 +411,7 @@ const TRANSLATIONS = {
     toast_doc_own:               'That\'s your own document!',
     toast_doc_already_followed:  'You\'re already subscribed to this document.',
     toast_doc_follow_error:      'Error while subscribing.',
+    toast_no_permission:        'Only the owner can perform this action.',
     toast_doc_subscribed:        'Subscribed to "${title}"!',
     toast_doc_unsubscribed:      'Subscription removed.',
     toast_tag_error:             'Error creating tag.',
