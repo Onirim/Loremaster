@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.documents (
   title                 TEXT NOT NULL DEFAULT '',
   content               TEXT NOT NULL DEFAULT '',
   is_public             BOOLEAN NOT NULL DEFAULT FALSE,
+  allow_write_share     BOOLEAN NOT NULL DEFAULT FALSE,
   share_code            TEXT UNIQUE,
   illustration_url      TEXT NOT NULL DEFAULT '',
   illustration_position SMALLINT NOT NULL DEFAULT 0,
@@ -55,6 +56,7 @@ BEGIN
     NEW.user_id := OLD.user_id;
     NEW.is_public := OLD.is_public;
     NEW.share_code := OLD.share_code;
+    NEW.allow_write_share := OLD.allow_write_share;
   END IF;
   RETURN NEW;
 END;
@@ -90,14 +92,14 @@ CREATE POLICY "documents_update" ON public.documents FOR UPDATE
     auth.uid() = user_id
     OR EXISTS (
       SELECT 1 FROM public.followed_documents fd
-      WHERE fd.document_id = id AND fd.user_id = auth.uid()
+      WHERE fd.document_id = id AND fd.user_id = auth.uid() AND allow_write_share = TRUE
     )
   )
   WITH CHECK (
     auth.uid() = user_id
     OR EXISTS (
       SELECT 1 FROM public.followed_documents fd
-      WHERE fd.document_id = id AND fd.user_id = auth.uid()
+      WHERE fd.document_id = id AND fd.user_id = auth.uid() AND allow_write_share = TRUE
     )
   );
 

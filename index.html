@@ -718,6 +718,14 @@
               <span id="doc-public-label">Privé</span>
             </label>
           </div>
+          <div class="doc-public-row">
+            <label data-i18n="doc_editor_write_share">Partage en écriture</label>
+            <label class="doc-public-toggle">
+              <input type="checkbox" id="doc-f-write-share" onchange="updateDocForm()"
+                style="width:auto;accent-color:var(--accent)">
+              <span data-i18n="doc_editor_write_share_help">Lecteurs peuvent éditer</span>
+            </label>
+          </div>
           <div class="doc-share-code-box" id="doc-share-code-box" style="display:none">
             <span class="code" id="doc-share-code-val">—</span>
             <button onclick="copyDocShareCode()">
